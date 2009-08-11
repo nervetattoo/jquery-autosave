@@ -8,12 +8,12 @@
     <script type="text/javascript" src="jquery.autosave.js"></script>
     <script type="text/javascript" src="http://dev.jquery.com/view/trunk/qunit/testrunner.js"></script>
     <link rel="stylesheet" type="text/css" href="http://dev.jquery.com/view/trunk/qunit/testsuite.css" />
+    <script type="text/javascript" src="jquery.autosave.test.js"></script>
     <style type="text/css">
         fieldset {
             display:none;
         }
     </style>
-    <script type="text/javascript" src="jquery.autosave.test.js"></script>
 </head>
 <body>
     <h1>QUnit example</h1>
@@ -21,49 +21,24 @@
     <h2 id="userAgent"></h2>
     <ol id="tests"></ol>
     <div id="main">
-    <form id="one" action="tojson.php" method="get">
-        <fieldset>
-            <legend>$("form#one").autosave();</legend>
-            <label>
-                A:
-                <input type="text" name="a" />
-            </label>
-            <label>
-                B:
-                <input type="text" name="b" />
-            </label>
-            <label>
-                C:
-                <textarea name="c"></textarea>
-            </label>
-        </fieldset>
-    </form>
-    <form id="two" action="tojson.php" method="get">
-        <fieldset>
-            <legend>$("form#one").autosave();</legend>
-            <label>
-                A:
-                <input type="text" name="a" />
-            </label>
-            <label>
-                B:
-                <input type="text" name="b" />
-            </label>
-        </fieldset>
-    </form>
-    <form id="three" action="tojson.php" method="get">
-        <fieldset>
-            <legend>$("form#one").autosave();</legend>
-            <label>
-                A:
-                <input type="text" name="a" />
-            </label>
-            <label>
-                B:
-                <input type="text" name="b" />
-            </label>
-        </fieldset>
-    </form>
+        <form id="one" action="tojson.php" method="get">
+            <fieldset>
+                <legend>$("form#one").autosave();</legend>
+                <label>
+                    A:
+                    <input type="text" name="a" />
+                </label>
+                <label>
+                    B:
+                    <input type="text" name="b" />
+                </label>
+                <label>
+                    C:
+                    <textarea name="c"></textarea>
+                </label>
+                <button type="submit" name="foo">Foo</button>
+            </fieldset>
+        </form>
     </div>
 </body>
 </html>

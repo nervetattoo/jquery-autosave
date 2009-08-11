@@ -11,16 +11,18 @@
  *     url: url, // Defaults to parent form url or window.location.href
  *     method: "post",  // Defaults to parent form url or get
  *     grouped: true, // Defaults to false. States whether all selected fields should be sent in the request or only the one it was triggered upon
- *     load: function(data) { 
+ *     success: function(data) { 
  *         console.log(data); 
  *     },
- *     dataType: "json", // Defaults to JSON, but can be XML, HTML and so on
- *     saving: function() { // Do stuff while we wait for the ajax response, defaults to doing nothing
+ *     send: function() { 
+ *         // Do stuff while we wait for the ajax response, defaults to doing nothing
  *         console.log("Saving");
  *     },
- *     error: function(xmlReq, text, errorThrown) { // Handler if the ajax request fails, defaults to console.log-ing the ajax request scope
+ *     error: function(xmlReq, text, errorThrown) { 
+ *         // Handler if the ajax request fails, defaults to console.log-ing the ajax request scope
  *         console.log(text);
- *     }
+ *     },
+ *     dataType: "json" // Defaults to JSON, but can be XML, HTML and so on
  * });
  *
  * $("form#myForm").autosave(); // Submits entire form each time one of the 
@@ -35,7 +37,14 @@
 (function($) {
     $.fn.autosave = function(options) {
         // Define some variables
-        var elems = $(this), nodes = {}, eventType;
+        var elems = $(this), nodes = {}, eventType,spinnerSize;
+        options = $.extend({
+            grouped: false,
+            send: false,
+            error: false,
+            success: false,
+            dataType: "json",
+        },options);
         
         /**
          * For each element selected (typically a list of form elements
@@ -44,43 +53,43 @@
          * onchange/onblur events for submitting
          */
         return elems.each(function(i) {
-            var spinner = $('<img src="/images/spin.gif" />').css({
-                    'position':'relative',
-                    'margin-left':'10px',
-                    'height':$(this).parent('fieldset').find('legend').height(),
-                    'width':$(this).parent('fieldset').find('legend').height(),
-            });
+            var that = $(this);
             if ($(this).is("form")) {
                 /* Group all inputelements in this form */
-
-                if (options == undefined)
-                    options = {};
                 options.grouped = true;
-                nodes = $(this).find(":input");
-                var that = $(this);
+                nodes = that.find(":input,button");
                 // Bind to forms submit
-                $(this).bind('submit', function(e) {
+                that.bind('submit', function(e) {
                     e.preventDefault();
-                    spinner.appendTo(that.find('legend'));
-                    $.fn.autosave._makeRequest(e, nodes, options, that, spinner);
+                    $.fn.autosave._makeRequest(e, nodes, options, that);
                 });
                 // Bind to form elements change
                 nodes.each(function (i) {
-                    $(this).bind("change", function (e) {
-                        spinner.appendTo(that.find('legend'));
-                        $.fn.autosave._makeRequest(e, nodes, options, this, spinner);
-                    });
+                    if ($(this).is('button')) {
+                        $(this).bind("click", function (e) {
+                            e.preventDefault();
+                            $.fn.autosave._makeRequest(e, nodes, options, this);
+                        });
+                    }
+                    else {
+                        $(this).bind("change", function (e) {
+                            $.fn.autosave._makeRequest(e, nodes, options, this);
+                        });
+                    }
                 });
             }
             else {
-                var that = $(this);
-                $(this).bind("change", function(e) {
-                    if (that.parent('fieldset').length > 0)
-                        spinner.appendTo(that.parent('fieldset').find('legend'));
-                    else
-                        spinner.prependTo(that.parent('form'));
-                    $.fn.autosave._makeRequest(e, elems, options, this, spinner);
-                });
+                if (that.is('button')) {
+                    that.bind("click", function (e) {
+                        e.preventDefault();
+                        $.fn.autosave._makeRequest(e, elems, options, this);
+                    });
+                }
+                else {
+                    that.bind("change", function (e) {
+                        $.fn.autosave._makeRequest(e, elems, options, this);
+                    });
+                }
             }
         });
     }
@@ -89,7 +98,7 @@
      * Actually make the http request
      * using previously supplied data
      */
-    $.fn.autosave._makeRequest = function(e, nodes, options, actsOn,spinner) {
+    $.fn.autosave._makeRequest = function(e, nodes, options, actsOn) {
         // Keep variables from global scope
         var vals = {}, opts = {}, form;
         /**
@@ -103,18 +112,6 @@
         opts = $.extend({
             url: (form.attr('action'))? form.attr('action') : window.location.href,
             method: (form.attr('method')) ? form.attr('method') : "post",
-            grouped: false,
-            load: function(data) {
-                // Do nothing
-                return true;
-            },
-            dataType: "json",
-            error: function(req, text, errorThrown) {
-                return this;
-            },
-            saving: function() {
-                // Do nothing
-            }
         }, options);
 
         /**
@@ -131,8 +128,7 @@
                  * send, EXCEPT if the button/submit was the explicit
                  * target, aka it was clicked
                  */
-                if (!$(this).is('button,:submit') ||
-                    e.originalEvent.explicitOriginalTarget == this)
+                if (!$(this).is('button,:submit') || e.currentTarget == this)
                     vals[this.name] = $(this).val();
             });
         }
@@ -142,20 +138,33 @@
         /**
          * Finally perform http request and run the saving-method
          */
-        opts.saving();
+        opts.send ? opts.send($(actsOn)) : false;
         $.ajax({
             type: opts.method,
             data: vals,
             url: opts.url,
             dataType: opts.dataType,
             success: function(resp) {
-                spinner ? spinner.remove():false;
-                opts.load(resp);
+                opts.success ? opts.success(resp) : false;
             },
             error: function(resp) {
-                spinner ? spinner.remove():false;
-                opts.error(resp);
+                opts.error ? opts.error(resp) : false;
             }
         });
     }
 })(jQuery);
+
+defaultAutosaveSendVisualizer = function(node) {
+    var refNode;
+    if (node.is('form'))
+        refNode = $(node).find('legend');
+    else
+        refNode = $(node).parent('fieldset').find('legend');
+    var spinner = $('<img src="/images/spin.gif" />').css({
+        'position':'relative',
+        'margin-left':'10px',
+        'height': refNode.height(),
+        'width': refNode.height()
+    });
+    spinner.appendTo(refNode);
+}
