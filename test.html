@@ -1,0 +1,131 @@
+<?xml version="1.0"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="nb" xml:lang="nb">
+<head>
+    <title>Automated test suite for jquery-autosave</title>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
+    <script type="text/javascript" src="jquery.autosave.js"></script>
+    <script type="text/javascript" src="http://jqueryjs.googlecode.com/svn/trunk/qunit/testrunner.js"></script>
+    <link rel="stylesheet" type="text/css" href="http://dev.jquery.com/view/trunk/qunit/testsuite.css" />
+    <style type="text/css">
+        fieldset {
+            display:none;
+        }
+    </style>
+    <script type="text/javascript">
+        $(function() {
+            /**
+             * Tests
+             */
+            test("full form submit", function() {
+                stop();
+                $("form#one").autosave({
+                    load: function(data) {
+                        start();
+                        equals('foo', data['a'], "Expecting value foo");
+                        stop();
+                    }
+                });
+                // Set some value on form
+                $("form#one input").val('foo');
+                $("form#one").trigger('submit');
+            });
+            test("single element submit", function() {
+                stop();
+                var nodes = $("form#two input");
+                var node = $("form#two input[name=a]");
+                nodes.autosave({
+                    load: function(data) {
+                        start();
+                        equals('foo', data['a'], "Expecting value foo");
+                        stop();
+                    }
+                });
+                // Set some value on form
+                nodes.val('foo');
+                node.trigger('change');
+            });
+            test("grouped element submit", function() {
+                stop();
+                var nodes = $("form#two input");
+                var node = $("form#two input[name=a]");
+                nodes.autosave({
+                    grouped: true,
+                    load: function(data) {
+                        start();
+                        equals(data.b,'foo', "Expecting value foo");
+                        equals(data.a,'foo', "Expecting value foo");
+                        stop();
+                    }
+                });
+                // Set some value on form
+                nodes.val('foo');
+                node.trigger('change');
+            });
+            test("non grouped element submit", function() {
+                stop();
+                var nodes = $("form#three input");
+                var node = $("form#three input[name=a]");
+                nodes.autosave({
+                    load: function(data) {
+                        start();
+                        equals(data.a,'foo', "Expecting value foo");
+                        ok(!("b" in data), "b should not be in data");
+                        stop();
+                    }
+                });
+                // Set some value on form
+                nodes.val('foo');
+                node.trigger('change');
+            });
+        });
+    </script>
+</head>
+<body>
+    <form id="one" action="tojson.php" method="get">
+        <fieldset>
+            <legend>$("form#one").autosave();</legend>
+            <label>
+                A:
+                <input type="text" name="a" />
+            </label>
+            <label>
+                B:
+                <input type="text" name="b" />
+            </label>
+        </fieldset>
+    </form>
+    <form id="two" action="tojson.php" method="get">
+        <fieldset>
+            <legend>$("form#one").autosave();</legend>
+            <label>
+                A:
+                <input type="text" name="a" />
+            </label>
+            <label>
+                B:
+                <input type="text" name="b" />
+            </label>
+        </fieldset>
+    </form>
+    <form id="three" action="tojson.php" method="get">
+        <fieldset>
+            <legend>$("form#one").autosave();</legend>
+            <label>
+                A:
+                <input type="text" name="a" />
+            </label>
+            <label>
+                B:
+                <input type="text" name="b" />
+            </label>
+        </fieldset>
+    </form>
+    <h1>QUnit example</h1>
+    <h2 id="banner"></h2>
+    <h2 id="userAgent"></h2>
+    <ol id="tests"></ol>
+    <div id="main"></div>
+</body>
+</html>
