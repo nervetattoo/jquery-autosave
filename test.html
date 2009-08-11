@@ -23,12 +23,15 @@
                 $("form#one").autosave({
                     load: function(data) {
                         start();
-                        equals('foo', data['a'], "Expecting value foo");
+                        equals('foo', data.a, "Expecting value foo");
+                        equals('foo', data.b, "Expecting value foo");
+                        equals('foobar', data.c, "Expecting value foobar");
                         stop();
                     }
                 });
                 // Set some value on form
                 $("form#one input").val('foo');
+                $("form#one textarea").val('foobar');
                 $("form#one").trigger('submit');
             });
             test("single element submit", function() {
@@ -93,6 +96,10 @@
             <label>
                 B:
                 <input type="text" name="b" />
+            </label>
+            <label>
+                C:
+                <textarea name="c"></textarea>
             </label>
         </fieldset>
     </form>
