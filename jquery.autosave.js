@@ -4,13 +4,13 @@
  * @author Mads Erik Forberg (mads[at]hardware[dot]no)
  * @author Raymond Julin (raymond[dot]julin[at]gmail[dot]com)
  *
- * Licensed under the BSD License
+ * Licensed under the MIT License
  *
  * Usage: 
  * $("input.autosave").autosave({ 
  *     url: url, // Defaults to parent form url or window.location.href
  *     method: "post",  // Defaults to parent form url or get
- *     grouped: true, // Defaults to false. States whether all "input.autosave" should be sent in the request or only the one it was triggered upon
+ *     grouped: true, // Defaults to false. States whether all selected fields should be sent in the request or only the one it was triggered upon
  *     load: function(data) { 
  *         console.log(data); 
  *     },
@@ -73,14 +73,13 @@
                 });
             }
             else {
-                nodes[this.name] = this;
                 var that = $(this);
                 $(this).bind("change", function(e) {
                     if (that.parent('fieldset').length > 0)
                         spinner.appendTo(that.parent('fieldset').find('legend'));
                     else
                         spinner.prependTo(that.parent('form'));
-                    $.fn.autosave._makeRequest(e, nodes, options, this, spinner);
+                    $.fn.autosave._makeRequest(e, elems, options, this, spinner);
                 });
             }
         });
