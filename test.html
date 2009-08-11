@@ -6,7 +6,7 @@
     <title>Automated test suite for jquery-autosave</title>
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
     <script type="text/javascript" src="jquery.autosave.js"></script>
-    <script type="text/javascript" src="http://jqueryjs.googlecode.com/svn/trunk/qunit/testrunner.js"></script>
+    <script type="text/javascript" src="http://dev.jquery.com/view/trunk/qunit/testrunner.js"></script>
     <link rel="stylesheet" type="text/css" href="http://dev.jquery.com/view/trunk/qunit/testsuite.css" />
     <style type="text/css">
         fieldset {
@@ -23,10 +23,9 @@
                 $("form#one").autosave({
                     load: function(data) {
                         start();
-                        equals('foo', data.a, "Expecting value foo");
-                        equals('foo', data.b, "Expecting value foo");
-                        equals('foobar', data.c, "Expecting value foobar");
-                        stop();
+                        equals('foo', data.a, "Expecting value foo for a(input#1)");
+                        equals('foo', data.b, "Expecting value foo for b(input#2)");
+                        equals('foobar', data.c, "Expecting value foobar for c(textarea)");
                     }
                 });
                 // Set some value on form
@@ -41,7 +40,7 @@
                 nodes.autosave({
                     load: function(data) {
                         start();
-                        equals('foo', data['a'], "Expecting value foo");
+                        equals('foo', data.a, "Expecting value foo");
                         stop();
                     }
                 });
@@ -57,8 +56,8 @@
                     grouped: true,
                     load: function(data) {
                         start();
-                        equals(data.b,'foo', "Expecting value foo");
-                        equals(data.a,'foo', "Expecting value foo");
+                        equals('foo', data.b, "Expecting value foo for b");
+                        equals('foo', data.a, "Expecting value foo for a");
                         stop();
                     }
                 });
@@ -73,7 +72,7 @@
                 nodes.autosave({
                     load: function(data) {
                         start();
-                        equals(data.a,'foo', "Expecting value foo");
+                        equals(data.a,'foo', "Expecting value foo for a");
                         ok(!("b" in data), "b should not be in data");
                         stop();
                     }
@@ -86,6 +85,11 @@
     </script>
 </head>
 <body>
+    <h1>QUnit example</h1>
+    <h2 id="banner"></h2>
+    <h2 id="userAgent"></h2>
+    <ol id="tests"></ol>
+    <div id="main">
     <form id="one" action="tojson.php" method="get">
         <fieldset>
             <legend>$("form#one").autosave();</legend>
@@ -129,10 +133,6 @@
             </label>
         </fieldset>
     </form>
-    <h1>QUnit example</h1>
-    <h2 id="banner"></h2>
-    <h2 id="userAgent"></h2>
-    <ol id="tests"></ol>
-    <div id="main"></div>
+    </div>
 </body>
 </html>
