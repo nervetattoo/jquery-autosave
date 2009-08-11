@@ -1,8 +1,9 @@
 /**
  * jQuery Plugin Autosave
  *
- * @author Mads Erik Forberg (mads[at]hardware[dot]no)
  * @author Raymond Julin (raymond[dot]julin[at]gmail[dot]com)
+ * @author Mads Erik Forberg (mads[at]hardware[dot]no)
+ * @author Simen Graaten (simen[at]hardware[dot]no)
  *
  * Licensed under the MIT License
  *
@@ -14,7 +15,7 @@
  *     success: function(data) { 
  *         console.log(data); 
  *     },
- *     send: function() { 
+ *     send: function(eventTriggeredByNode) { 
  *         // Do stuff while we wait for the ajax response, defaults to doing nothing
  *         console.log("Saving");
  *     },
@@ -26,25 +27,31 @@
  * });
  *
  * $("form#myForm").autosave(); // Submits entire form each time one of the 
- *                              // elements are changed
+ *                              // elements are changed, except buttons and submits
  *
  *
  * Todo:
- * - More events: load/error/saving
- * 
+ * - Support timed autosave for textareas
  */
 
 (function($) {
     $.fn.autosave = function(options) {
-        // Define some variables
-        var elems = $(this), nodes = {}, eventType,spinnerSize;
+        /**
+         * Define some needed variables
+         * elems is a shortcut for the selected nodes
+         * nodes is another shortcut for elems later (wtf)
+         * eventType i dont have any fking clue
+         * eventName will be used to set what event to connect to
+         */
+        var elems = $(this), nodes = $(this), eventType, eventName;
+
         options = $.extend({
             grouped: false,
-            send: false,
-            error: false,
-            success: false,
-            dataType: "json",
-        },options);
+            send: false, // Callback
+            error: false, // Callback
+            success: false, // Callback
+            dataType: "json" // From ajax return point
+        }, options);
         
         /**
          * For each element selected (typically a list of form elements
@@ -53,43 +60,30 @@
          * onchange/onblur events for submitting
          */
         return elems.each(function(i) {
-            var that = $(this);
             if ($(this).is("form")) {
                 /* Group all inputelements in this form */
                 options.grouped = true;
-                nodes = that.find(":input,button");
+                nodes = $(this).find(":input,button");
                 // Bind to forms submit
-                that.bind('submit', function(e) {
+                $(this).bind('submit', function(e) {
                     e.preventDefault();
-                    $.fn.autosave._makeRequest(e, nodes, options, that);
+                    $.fn.autosave._makeRequest(e, nodes, options, $(this));
                 });
-                // Bind to form elements change
+                // Bind to form elements change or click (buttons)
                 nodes.each(function (i) {
-                    if ($(this).is('button')) {
-                        $(this).bind("click", function (e) {
-                            e.preventDefault();
-                            $.fn.autosave._makeRequest(e, nodes, options, this);
-                        });
-                    }
-                    else {
-                        $(this).bind("change", function (e) {
-                            $.fn.autosave._makeRequest(e, nodes, options, this);
-                        });
-                    }
+                    eventName = $(this).is('button') ? 'click' : 'change';
+                    $(this).bind(eventName, function (e) {
+                        e.preventDefault();
+                        $.fn.autosave._makeRequest(e, nodes, options, this);
+                    });
                 });
             }
             else {
-                if (that.is('button')) {
-                    that.bind("click", function (e) {
-                        e.preventDefault();
-                        $.fn.autosave._makeRequest(e, elems, options, this);
-                    });
-                }
-                else {
-                    that.bind("change", function (e) {
-                        $.fn.autosave._makeRequest(e, elems, options, this);
-                    });
-                }
+                eventName = $(this).is('button') ? 'click' : 'change';
+                $(this).bind(eventName, function (e) {
+                    e.preventDefault();
+                    $.fn.autosave._makeRequest(e, nodes, options, this);
+                });
             }
         });
     }
@@ -100,16 +94,17 @@
      */
     $.fn.autosave._makeRequest = function(e, nodes, options, actsOn) {
         // Keep variables from global scope
-        var vals = {}, opts = {}, form;
+        var vals = {}, form;
         /**
-         * Generate a hash of options
-         * method: post
-         * url: Will default to parent form if one is found,
-         *   if not it will use the current location
-         * load: Will be an empty function returning (bool)true
+         * Further set default options that require
+         * to actually inspect what node autosave was triggered upon
+         * Defaults:
+         *  -method: post
+         *  -url: Will default to parent form if one is found,
+         *        if not it will use the current location
          */
         form = $(actsOn).is('form') ? $(actsOn) : $(actsOn.form);
-        opts = $.extend({
+        options = $.extend({
             url: (form.attr('action'))? form.attr('action') : window.location.href,
             method: (form.attr('method')) ? form.attr('method') : "post",
         }, options);
@@ -120,8 +115,7 @@
          * But if its false we should only push
          * the one element we are acting on
          */
-        if (opts.grouped) {
-            var vals = {};
+        if (options.grouped) {
             nodes.each(function (i) {
                 /**
                  * Do not include button and input:submit as nodes to 
@@ -136,31 +130,39 @@
             vals[actsOn.name] = $(actsOn).val();
         }
         /**
-         * Finally perform http request and run the saving-method
+         * Perform http request and trigger callbacks respectively
          */
-        opts.send ? opts.send($(actsOn)) : false;
+        // Callback triggered when ajax sending starts
+        options.send ? options.send($(actsOn)) : false;
         $.ajax({
-            type: opts.method,
+            type: options.method,
             data: vals,
-            url: opts.url,
-            dataType: opts.dataType,
+            url: options.url,
+            dataType: options.dataType,
             success: function(resp) {
-                opts.success ? opts.success(resp) : false;
+                options.success ? options.success(resp) : false;
             },
             error: function(resp) {
-                opts.error ? opts.error(resp) : false;
+                options.error ? options.error(resp) : false;
             }
         });
     }
 })(jQuery);
 
+/**
+ * A default (example) of a visualizer you can use that will
+ * put a neat loading image in the nearest <legend>
+ * for the element/form you were autosaving.
+ * Notice: No default "remover" of this spinner exists
+ */
 defaultAutosaveSendVisualizer = function(node) {
     var refNode;
     if (node.is('form'))
         refNode = $(node).find('legend');
     else
         refNode = $(node).parent('fieldset').find('legend');
-    var spinner = $('<img src="/images/spin.gif" />').css({
+    // Create spinner
+    var spinner = $('<img src="spin.gif" />').css({
         'position':'relative',
         'margin-left':'10px',
         'height': refNode.height(),
