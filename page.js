@@ -1,7 +1,8 @@
 $(function(){
     $("form select,form input,form textarea").autosave({
-        grouped:false,
+        grouped:true,
         success:function(data) {
+            $("#demodebug").html('');
             if ("name" in data)
                 $("<span>Select:"+data.name+"</span><br/>").appendTo($("#demodebug"));
             if ("text" in data)
