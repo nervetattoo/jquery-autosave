@@ -77,7 +77,7 @@
         elems.each(function(i) {
             eventName = $(this).is('button,:submit') ? 'click' : 'change';
             $(this).bind(eventName, function (e) {
-                e.preventDefault();
+                eventName == 'click' ? e.preventDefault() : false;
                 $.fn.autosave._makeRequest(e, nodes, options, this);
             });
         });
@@ -123,7 +123,9 @@
             });
         }
         else {
-            vals[actsOn.name] = $(actsOn).val();
+            vals[actsOn.name] = $(actsOn).is(':checkbox') ? 
+                $(actsOn).attr('checked') : 
+                $(actsOn).val();
         }
         /**
          * Perform http request and trigger callbacks respectively

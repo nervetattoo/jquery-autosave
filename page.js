@@ -1,11 +1,17 @@
 $(function(){
-    $("form select,form input").autosave({
+    $("form select,form input,form textarea").autosave({
         grouped:false,
         success:function(data) {
             if ("name" in data)
-                $("<span>"+data.name+"</span><br/>").appendTo($("#demodebug"));
+                $("<span>Select:"+data.name+"</span><br/>").appendTo($("#demodebug"));
             if ("text" in data)
-                $("<span>"+data.text+"</span><br/>").appendTo($("#demodebug"));
+                $("<span>Input:"+data.text+"</span><br/>").appendTo($("#demodebug"));
+            if ("textarea" in data)
+                $("<span>Textarea:"+data.textarea+"</span><br/>").appendTo($("#demodebug"));
+            if ("checkbox" in data)
+                $("<span>Checkbox: "+data.checkbox+"</span><br/>").appendTo($("#demodebug"));
+            if ("radio" in data)
+                $("<span>Radio: "+data.radio+"</span><br/>").appendTo($("#demodebug"));
         }
     });
     // Set up documentation shit
