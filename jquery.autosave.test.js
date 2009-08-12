@@ -87,7 +87,6 @@ $(function() {
         nodes.autosave({
             grouped: true,
             success: function(data) {
-                console.log(data);
                 start();
                 equals(data.b, 'foo', "Expecting value foo for b");
                 equals(data.b, 'foo', "Expecting value foo for a");
