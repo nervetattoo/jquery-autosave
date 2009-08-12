@@ -102,7 +102,7 @@
         form = $(actsOn).is('form') ? $(actsOn) : $(actsOn.form);
         options = $.extend({
             url: (form.attr('action'))? form.attr('action') : window.location.href,
-            method: (form.attr('method')) ? form.attr('method') : "post",
+            method: (form.attr('method')) ? form.attr('method') : "post"
         }, options);
 
         /**
