@@ -40,10 +40,9 @@
          * Define some needed variables
          * elems is a shortcut for the selected nodes
          * nodes is another shortcut for elems later (wtf)
-         * eventType i dont have any fking clue
          * eventName will be used to set what event to connect to
          */
-        var elems = $(this), nodes = $(this), eventType, eventName;
+        var elems = $(this), nodes = $(this), eventName;
 
         options = $.extend({
             grouped: false,
@@ -118,8 +117,13 @@
                  * send, EXCEPT if the button/submit was the explicit
                  * target, aka it was clicked
                  */
-                if (!$(this).is('button,:submit') || e.currentTarget == this)
-                    vals[this.name] = $(this).val();
+                if (!$(this).is('button,:submit') || e.currentTarget == this) {
+                    if ($(this).is(':radio') && $(this).attr('checked')==false)
+                        return;
+                    vals[this.name] = $(this).is(':checkbox') ? 
+                        $(this).attr('checked') : 
+                        $(this).val();
+                }
             });
         }
         else {
