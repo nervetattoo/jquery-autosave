@@ -54,38 +54,34 @@
         }, options);
         
         /**
+         * If the root form is used as selector
+         * bind to its submit and find all its
+         * input fields and bind to them
+         */
+        if ($(this).is('form')) {
+            /* Group all inputelements in this form */
+            options.grouped = true;
+            elems = nodes = $(this).find(":input,button");
+            // Bind to forms submit
+            $(this).bind('submit', function(e) {
+                e.preventDefault();
+                $.fn.autosave._makeRequest(e, nodes, options, $(this));
+            });
+        }
+        /**
          * For each element selected (typically a list of form elements
          * that may, or may not, reside in the same form
          * Build a list of these nodes and bind them to some
          * onchange/onblur events for submitting
          */
-        return elems.each(function(i) {
-            if ($(this).is("form")) {
-                /* Group all inputelements in this form */
-                options.grouped = true;
-                nodes = $(this).find(":input,button");
-                // Bind to forms submit
-                $(this).bind('submit', function(e) {
-                    e.preventDefault();
-                    $.fn.autosave._makeRequest(e, nodes, options, $(this));
-                });
-                // Bind to form elements change or click (buttons)
-                nodes.each(function (i) {
-                    eventName = $(this).is('button') ? 'click' : 'change';
-                    $(this).bind(eventName, function (e) {
-                        e.preventDefault();
-                        $.fn.autosave._makeRequest(e, nodes, options, this);
-                    });
-                });
-            }
-            else {
-                eventName = $(this).is('button') ? 'click' : 'change';
-                $(this).bind(eventName, function (e) {
-                    e.preventDefault();
-                    $.fn.autosave._makeRequest(e, nodes, options, this);
-                });
-            }
+        elems.each(function(i) {
+            eventName = $(this).is('button,:submit') ? 'click' : 'change';
+            $(this).bind(eventName, function (e) {
+                e.preventDefault();
+                $.fn.autosave._makeRequest(e, nodes, options, this);
+            });
         });
+        return $(this);
     }
     
     /**
