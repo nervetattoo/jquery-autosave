@@ -1,0 +1,87 @@
+body {
+  margin: 10px;
+  padding: 0;
+  font-family: helvetica, tahoma, sans-serif;
+  font-size: 62.5%; /* 10px */
+  line-height: 1.4em;
+}
+
+a:link, a:active {
+  color: #80ADDA;
+}
+
+a:hover, a:visited {
+  color: #E88798;
+}
+
+h1 {
+  margin: 0;
+  padding: 5px 10px;
+  color: #80ADDA;
+  font-size: 3.2em;
+  line-height: 1.8em;
+  text-transform: uppercase;
+}
+
+h1 span {
+  color: #E88798;
+  font-size: x-small;
+  vertical-align: super;
+}
+
+h2 {
+  margin: 0;
+  padding: 10px;
+  color: #444;
+  font-size: 1.6em;
+  background-color: #eee;
+  border-top: 3px solid #aaa;
+}
+
+h2 a:hover {
+  color: #444;
+}
+
+h3 {
+  margin: 0;
+  color: #444;
+  padding: 5px 10px;
+}
+
+h4 {
+  color: #E88798;
+  margin-bottom: 5px;
+}
+
+p {
+  margin: 0;
+  padding: 10px;
+  font-size: 1.2em;
+  line-height: 1.6em;
+  color: #333;
+}
+
+ul {
+  margin: 10px 0;
+  padding: 0 0 0 30px;
+  font-size: 1.2em;
+}
+
+ol {
+  margin: 10px 0;
+  padding: 0 0 0 30px;
+  font-size: 1.2em;
+  list-style-type: decimal;
+}
+
+form {
+  padding: 10px;
+}
+
+.radio input {
+  vertical-align: text-bottom;
+}
+
+.checkbox input {
+  vertical-align: middle;
+}

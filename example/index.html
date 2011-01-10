@@ -1,377 +1,69 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"> 
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"> 
-<head> 
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/> 
-	<title>jQuery Autosave</title> 
-	<link rel="stylesheet" href="style.css" type="text/css" />
-    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
-    <script type="text/javascript" src="jquery.autosave.js"></script>
-    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.2/jquery-ui.min.js" type="text/javascript"></script>
-    <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.2/themes/smoothness/jquery-ui.css" type="text/css" media="all" />
+<html>
+  <head>
+  <title>jQuery.autosave Examples</title>
 
-	<link type="text/css" href="css/ui.multiselect.css" rel="stylesheet" />
-	<script type="text/javascript" src="page.js"></script>
-</head>
-<body>
-<a href="http://github.com/nervetattoo/jquery-autosave">
-    <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_white_ffffff.png" alt="Fork me on GitHub" />
-</a>
- 
-<div id="wrapper"> 
-	<div id="header"> 
-		<h1>jQuery Autosave</h1> 
-		<p>A flexible autosave plugin for jQuery</p> 
-		
-		<ul id="nav">
-		   <li><a href="http://github.com/nervetattoo/jquery-autosave">Source</a></li>
-		   <li><a href="http://github.com/nervetattoo/jquery-autosave/issues">Bugs</a></li>
-		</ul>
-		<div id="version"></div>
-	</div> 
-	
-	<div id="content">
-		<p>It depends on <a href="http://jquery.com/">jQuery 1.3</a> and is available under a <a id="license-MIT" href="#license">MIT license</a>.</p>
+  <link type="text/css" rel="stylesheet" href="styles.css" />
 
-		<h2>Demo #1 Full form autosave</h2>
-        <div>
-            <form action="tojson.php" style="border: none;" id="demo" method="get">
-                <label>Name:
-                    <select id="name" name="name">
-                        <option value="Andrew">Andrew</option>
-                        <option value="Brian">Brian</option>
-                        <option value="Claire">Claire</option>
-                        <option value="Heather">Heather</option>
-                        <option value="Hugh">Hugh</option>
-                        <option value="James">James</option>
-                        <option value="Mark">Mark</option>
-                    </select>
-                </label>
-                <label>Text:
-                    <input type="input" name="text" />
-                </label>
-                <label>Textarea:
-                    <textarea name="textarea"></textarea>
-                </label>
-                <label>Checkbox:
-                    <input type="checkbox" name="checkbox" />
-                </label>
-                <label>Val1:
-                    <input type="radio" name="radio" value="1" />
-                </label>
-                <label>Val2
-                    <input type="radio" name="radio" value="2" />
-                </label>
-            </form>
-            <p id="demodebug"></p>
-		</div>
-				 
-		<h2>Features</h2>
-		<ul>
-            <li>Send entire form when one element changes</li>
-            <li>Send just the changed element</li>
-            <li>Form buttons and input:submit is not sent unless clicked</li>
-            <li>Override action/method parameter of form or fallback</li>
-            <li>Send elements from multiple forms in one request</li>
-            <li>Callbacks on sending, success and error</li>
-		</ul>
+  <script language="javascript" type="text/javascript" src="http://code.jquery.com/jquery-1.4.4.min.js"></script>
+  <script language="javascript" type="text/javascript" src="../src/jquery.autosave.js"></script>
+  <script language="javascript" type="text/javascript">
+    jQuery(function($) {
+      $("#example1").autosave();
+    });
+  </script>
+  </head>
+  <body>
+    <h1>jQuery.autosave Examples</h1>
 
-		<h2>Known bugs</h2>
-		<ul>
-            <li>When grouped:true radio buttons breaks</li>
-            <li><a href="http://github.com/nervetattoo/jquery-autosave/issues">...more?</a></li>
-		</ul>
+    <h2>The Form</h2>
+    <form name="example1" id="example1">
+      <ol class="example">
+        <li>
+          <h4>Text</h4>
+          <input name="text" type="text" value="" />
+        </li>
+        <li>
+          <h4>Textarea</h4>
+          <textarea name="textarea"></textarea>
+        </li>
+        <li>
+          <h4>Radio Group</h4>
+          <span class="group">
+            <label class="radio"><input name="radio" type="radio" value="1" />1</label>
+            <label class="radio"><input name="radio" type="radio" value="2" />2</label>
+            <label class="radio"><input name="radio" type="radio" value="3" />3</label>
+          </span>
+        </li>
+        <li>
+          <h4>Checkbox Group</h4>
+          <span class="group">
+            <label class="checkbox"><input name="checkbox" type="checkbox" value="1" />1</label>
+            <label class="checkbox"><input name="checkbox" type="checkbox" value="2" />2</label>
+            <label class="checkbox"><input name="checkbox" type="checkbox" value="3" />3</label>
+          </span>
+        </li>
+        <li>
+          <h4>Select List</h4>
+          <select name="select">
+            <option value=""></option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+          </select>
+        </li>
+          <li>
+            <h4>Multiple Select List</h4>
+            <select name="multi-select" multiple="multiple">
+              <option value=""></option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+            </select>
+          </li>
+      </ol>
+    </form>
 
-		<h2 id="todo">Todo</h2>
-		<p>Here's a list of features that may or may not be implemented in future releases (no specific versions).</p>
-		<ul>
-            <li>Timer based saving of textarea input</li>
-            <li><a href="http://github.com/nervetattoo/jquery-autosave/issues">...more?</a></li>
-		</ul>
-
-		<h2>Contributors</h2>
-		<ul>
-			<li><a href="http://github.com/nervetattoo/jquery-autosave/">Raymond Julin</a></li>
-			<li>Mads Forberg</li>
-		</ul>
-
-		<h2>Misc</h2>
-		<p>There are no limitations. Do whatever you want with this plugin.
-			If you did some nice modifications, just let us know (via Github). We'd be happy to review them, and perhaps include them.</p>
-	</div> 
-
-	<!-- Options -->
-	<div id="optionTabs" class="UIAPIPlugin">
-		<ul>
-			<li><a href="#optionTabs-1">Options</a></li>
-			<li><a href="#optionTabs-2">Methods</a></li>
-			<li><a href="#optionTabs-3">Events</a></li>
-		</ul>
-
-		<div id="optionTabs-1">
-
-			<ul class="options-list">
-		   
-				<!-- option - animated -->
-				<li class="option" id="option-url">
-					<div class="option-header">
-						<h3 class="option-name"><a href="#option-url">url</a></h3>
-
-						<dl>
-							<dt class="option-type-label">Type:</dt>
-							<dd class="option-type">String, null</dd>
-				
-							<dt class="option-default-label">Default:</dt>
-							<dd class="option-default">form.action</dd>
-						</dl>
-					</div>
-
-					<div class="option-description">
-						<p>When <i>url</i> is specified, the forms action attribute will be overriden by the supplied url.</p>
-					</div>
-					<div class="option-examples">
-						<h4>Code examples</h4>
-						<dl class="option-examples-list">
-							<dt>
-								Initialize an autosave with user specified url.
-							</dt>
-							<dd>
-								<pre><code>$('input').autosave({ url: '/myurl' });</code></pre>
-							</dd>
-						</dl>
-					</div>
-				</li>
-
-				<li class="option" id="option-method">
-					<div class="option-header">
-						<h3 class="option-name"><a href="#option-method">method</a></h3>
-						<dl>
-							<dt class="option-type-label">Type:</dt>
-							<dd class="option-type">String, null</dd>
-				
-							<dt class="option-default-label">Default:</dt>
-							<dd class="option-default">form.method</dd>
-						</dl>
-					</div>
-					<div class="option-description">
-						<p>Override forms default action (post/get)</p>
-					</div>
-					<div class="option-examples">
-						<h4>Code examples</h4>
-						<dl class="option-examples-list">
-							<dt>
-								Override default action
-							</dt>
-							<dd>
-                                <pre><code>$('input').autosave({method:'get'});</code></pre>
-							</dd>
-						</dl>
-					</div>
-				</li>
-
-				<li class="option" id="option-grouped">
-					<div class="option-header">
-						<h3 class="option-name"><a href="#option-grouped">grouped</a></h3>
-						<dl>
-							<dt class="option-type-label">Type:</dt>
-							<dd class="option-type">boolean</dd>
-				
-							<dt class="option-default-label">Default:</dt>
-							<dd class="option-default">false</dd>
-						</dl>
-					</div>
-					<div class="option-description">
-						<p>When grouped is set to false autosave will not group all elements matching <em>selector</em> but instead only send the one single node it was triggered upon (onchange/onclick).</p>
-                        <p>If set to <i>true</i> it will group every element matched by <em>selector</em> and send each value as data when the request is sent to the server</p>
-					</div>
-				</li>
-
-				<li class="option" id="option-dataType">
-					<div class="option-header">
-						<h3 class="option-name"><a href="#option-dataType">dataType</a></h3>
-						<dl>
-							<dt class="option-type-label">Type:</dt>
-							<dd class="option-type">String</dd>
-				
-							<dt class="option-default-label">Default:</dt>
-							<dd class="option-default">'json'</dd>
-						</dl>
-					</div>
-					<div class="option-description">
-						<p>Define what content type to expect to be returned by the url used for autosave.</p>
-                        <p>Can be any jQuery content type.</p>
-					</div>
-				</li>
-
-				<li class="option" id="option-send">
-					<div class="option-header">
-						<h3 class="option-name"><a href="#option-send">send</a></h3>
-						<dl>
-							<dt class="option-type-label">Type:</dt>
-							<dd class="option-type">Function, null</dd>
-				
-							<dt class="option-default-label">Default:</dt>
-							<dd class="option-default">false</dd>
-						</dl>
-					</div>
-					<div class="option-description">
-						<p>Supply a callback method to be used while sending ajax request.</p>
-					</div>
-					<div class="option-examples">
-						<h4>Code examples</h4>
-						<dl class="option-examples-list">
-							<dt>
-								Specify a custom handler while sending data.
-							</dt>
-							<dd>
-								<pre><code>$('input').autosave({
-                                    send: function(changedNode) {
-                                        // Do some pretty spinner visualization here
-                                    }
-                                });</code></pre>
-							</dd>
-						</dl>
-					</div>
-				</li>
-
-				<li class="option" id="option-success">
-					<div class="option-header">
-						<h3 class="option-name"><a href="#option-success">success</a></h3>
-						<dl>
-							<dt class="option-type-label">Type:</dt>
-							<dd class="option-type">Function, null</dd>
-				
-							<dt class="option-default-label">Default:</dt>
-							<dd class="option-default">null</dd>
-						</dl>
-					</div>
-					<div class="option-description">
-						<p>Callback on success from ajax request.</p>
-					</div>
-					<div class="option-examples">
-						<h4>Code examples</h4>
-						<dl class="option-examples-list">
-							<dt>
-								Specify a custom handler to run when success is received.
-							</dt>
-							<dd>
-								<pre><code>$('input').autosave({
-                                    success: function(data) {
-                                        // Show some confirmation to user
-                                    }
-                                });</code></pre>
-							</dd>
-						</dl>
-					</div>
-				</li>
-				<li class="option" id="option-error">
-					<div class="option-header">
-						<h3 class="option-name"><a href="#option-error">error</a></h3>
-						<dl>
-							<dt class="option-type-label">Type:</dt>
-							<dd class="option-type">Function, null</dd>
-				
-							<dt class="option-default-label">Default:</dt>
-							<dd class="option-default">null</dd>
-						</dl>
-					</div>
-					<div class="option-description">
-						<p>Callback on error from ajax request.</p>
-					</div>
-					<div class="option-examples">
-						<h4>Code examples</h4>
-						<dl class="option-examples-list">
-							<dt>
-								Specify a custom handler to run when error is received.
-							</dt>
-							<dd>
-								<pre><code>$('input').autosave({
-                                    error: function(data) {
-                                        // Show a warning that something failed
-                                    }
-                                });</code></pre>
-							</dd>
-						</dl>
-					</div>
-				</li>
-			</ul>
-		</div>
-
-
-		<div id="optionTabs-2">
-
-            <p>Autosave currently supports no methods</p>
-			<ul class="methods-list">
-<!-- Kept as template
-				<li class="method" id="method-cancel">
-					<div class="method-header">
-						<h3 class="method-name"><a href="#method-cancel">cancel</a></h3>
-						<dl>
-							<dt class="method-signature-label">Signature:</dt>
-							<dd class="method-signature">.multiselect( 'enabled', <span class="optional">[</span>state<span class="optional">]</span>, <span class="optional">[</span>msg<span class="optional">]</span> )</dd>
-						</dl> 
-					</div>
-					<div class="method-description">
-						<p>Get or set the state of the enabled multiselect. If no state is specified, will act as a getter. If state is set to <code>false</code>, the <code>msg</code> argument will display the specified string as custom disabled message inside the multiseelct.</p>
-					</div>
-				</li>
--->
-			</ul>
-
-		</div>
-
-		<div id="optionTabs-3">
-
-			<p>
-                Autosave currently doesnt implement events that can be added after initialization time
-            </p>
-
-			<ul class="events-list">
-		   
-				<!-- event - deselected -->
-                <!-- Kept for template
-				<li class="event" id="event-deselected">
-					<div class="event-header">
-						<h3 class="event-name"><a href="#event-deselected">deselected</a></h3>
-
-						<dl>
-							<dt class="event-type-label">Type:</dt>
-							<dd class="event-type">multiselectdeselected</dd>
-						</dl>
-					</div>
-
-					<div class="event-description">
-						<p>This event is triggered whenever the an option has been deselected. The event <code>deselected</code> is triggered for every option deselected.</p>
-					</div>
-					<div class="event-examples">
-						<h4>Code examples</h4>
-						<dl class="option-examples-list">
-							<dt>
-								Supply a feedback function to handle the <code>deselected</code> events as an init option.
-							</dt>
-							<dd>
-								<pre><code>$('.selector').multiselect({ deselected: function(event, ui) { alert($(ui.option).val() + " has been deselected"); } });</code></pre>
-							</dd>
-							<dt>
-								Bind to the <code>deselected</code> event of type <code>multiselectdeselected</code>.
-							</dt>
-							<dd>
-								<pre><code>$('.selector').bind('multiselectdeselected', function(event, ui) {
-  ...   // ui.option is the DOMOption node of ui.sender
-});</code></pre>
-							</dd>
-						</dl>
-					</div>
-				</li>
-                -->
-			</ul>			
-		</div>
-
-	</div>
-
-	<div id="footer"> 
-		<p class="right">Template/design adopted from <a href="http://yanickrochon.uuuq.com/multiselect/">yanickrochon.uuuq.com</a></p>
-		<br class="clear"/>
-	</div> 
-</div> 
-</body> 
+    <h2>The Result</h2>
+    <div id="result"></div>
+  </body>
 </html>
