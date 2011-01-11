@@ -8,14 +8,14 @@
   <script language="javascript" type="text/javascript" src="../src/jquery.autosave.js"></script>
   <script language="javascript" type="text/javascript">
     jQuery(function($) {
-      $("#example1").autosave();
+      $(":input").autosave();
     });
   </script>
   </head>
   <body>
     <h1>jQuery.autosave Examples</h1>
 
-    <h2>The Form</h2>
+    <h2>The Forms</h2>
     <form name="example1" id="example1">
       <ol class="example">
         <li>
@@ -61,6 +61,10 @@
             </select>
           </li>
       </ol>
+    </form>
+
+    <form name="example2" id="example2">
+      <input name="text2" type="text" value="" />
     </form>
 
     <h2>The Result</h2>
