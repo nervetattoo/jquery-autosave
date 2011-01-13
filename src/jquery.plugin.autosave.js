@@ -15,7 +15,15 @@
 (function($) {
   $.plugin("autosave", {
     options: {
-      save: "ajax",
+      save: {
+        method: "ajax",
+        methods: {
+          ajax: {
+            url: window.location.href,
+            method: "POST"
+          }
+        }
+      },
       notify: {
         onEvent: false,
         onChange: true,
@@ -32,7 +40,7 @@
 
     // Set up the plugin
     _initialize: function() {
-      var forms = [], self = this;
+      var self = this;
 
       // We are only interested in forms and inputs
       if (!this.element.elements && !this.element.form) return;
@@ -46,30 +54,33 @@
       // Set up our default values
       $.extend(true, this, {
         timer: null,
-        changed: [],
+        changed: {},
         $forms: this.forms(),
         $fields: this.fields(),
-        group: this.options.group,
-        notify: this.options.notify,
         interval: !isNaN(parseInt(this.options.notify.onInterval))
-          ? this.options.notify.onInterval : 30000,
-        eventName: typeof this.options.notify.onEvent === 'string'
-          ? this.options.notify.onEvent : 'autosave',
+          ? this.options.notify.onInterval : 3000,
+        eventName: typeof this.options.notify.onEvent === "string"
+          ? this.options.notify.onEvent : "autosave",
         conditions: $.isArray(this.options.conditions)
-          ? this.options.conditions : null
+          && this.options.conditions.length ? this.options.conditions : null
+      });
+
+      // Set up changed fields for each form
+      this.$forms.each(function() {
+        self.changed[this.name] = [];
       });
 
       // Bind to event
-      if (this.notify.onEvent) {
+      if (this.options.notify.onEvent) {
         console.log("onEvent:", eventType);
 
         this.form.bind(this.eventName, function() {
-          self.notify(this);
+          self._notify(this);
         });
       }
 
       // Start interval
-      if (this.notify.onInterval) {
+      if (this.options.notify.onInterval) {
         console.log("onInterval:", this.interval);
 
         this.start(this.interval);
@@ -78,7 +89,7 @@
       // Set up form listeners to all form inputs.
       // For IE bug fixes, see: https://gist.github.com/770449
       this.$fields.each(function() {
-        var eventType = (this.type == 'checkbox' ||
+        var eventType = (this.type == "checkbox" ||
           this.tagName.toLowerCase() == "select" && this.multiple)
           && ("onpropertychange" in document.body) ? "propertychange" : "change";
 
@@ -86,33 +97,33 @@
           if (e.type == "change" || (e.type == "propertychange"
             && /^(checked|selectedIndex)$/.test(window.event.propertyName))) {
             // Add this element to the list of changed elements
-            self.changed.push(this);
+            self.changed[this.form.name].push(this);
 
-            if (self.notify.onChange) {
+            if (self.options.notify.onChange) {
               console.log("onUpdate:", this);
-              self.notify(this);
+              self._notify(this);
             }
           }
         });
       });
     },
 
-    // Returns the form fields associated with targets
-    fields: function(targets) {
-      var $targets = targets ? targets : this.elements;
+    // Returns the form fields associated with elements
+    fields: function(elements) {
+      var $elements = elements ? $(elements) : this.elements;
 
-      // Extracts form fields if a form element is found
-      return $targets.map(function() {
+      // Extract inputs from form elements
+      return $elements.map(function() {
         return this.elements ? $.makeArray(this.elements) : this;
       });
     },
 
-    // returns the forms associated with targets
-    forms: function(targets) {
-      var $targets = targets ? $(targets) : this.elements;
+    // Returns the forms associated with elements
+    forms: function(elements) {
+      var $elements = elements ? $(elements) : this.elements;
 
-      // we only want unique form instances, no duplicates
-      return $($.unique($targets.map(function() {
+      // Weed out duplicates
+      return $($.unique($elements.map(function() {
         return this.elements ? this : this.form;
       }).get()));
     },
@@ -124,7 +135,7 @@
         if (this.timer) this.stop();
 
         this.timer = setTimeout(function() {
-          self.notify(this.timer);
+          self._notify(null, self.timer);
         }, interval || this.interval);
     },
 
@@ -141,8 +152,8 @@
 
       targets = targets || this.$fields;
 
-      if (this.conditions && this.conditions.length) {
-        $.each(conditions, function(i, condition) {
+      if (this.conditions) {
+        $.each(this.conditions, function(i, condition) {
           if ($.isFunction(condition)) {
             return passes = (condition.call(self.$element,
               self.$forms, targets, self.options, self.changed) !== false);
@@ -154,36 +165,63 @@
     },
 
     // Notifies the plugin of a change and handles it accordingly
-    notify: function(targets, timer) {
-      var self = this;
+    _notify: function(targets, timer) {
+      var requests, self = this, group = this.options.group;
 
       console.log("notify:", targets, timer);
 
       // If there is a timer running, only proceed if it called this function
-      if (!this.timer || this.group.byInterval && this.timer === timer) {
+      if (!this.timer || group.byInterval && this.timer === timer) {
         // Fields may be all fields, or only those that have changed
-        var $fields = this.group.byChanged ? fields(this.changed)
-          : (targets ? fields(targets) : this.$fields);
+        var $fields = group.byChanged ? this.fields(this.changed)
+          : (targets ? this.fields(targets) : this.$fields);
+
+        // TODO -- implement group.byForm
 
         // Loop through all of our conditions and make sure they pass
         if ($fields.length && (!this.conditions || this.passes($fields))) {
-          self.save($fields.serializeArray());
+          this._save($fields.serializeArray());
         }
-      }
 
-      // If there is a timer running, continue on to the next interval
-      if (this.time && this.timer === timer) {
-        console.log("started");
-        this.start();
+        // If there is a timer running, start the next interval
+        else if (this.timer) {
+          console.log("start");
+          this.start();
+        }
       }
     },
 
     // performs the actual saving of data
     _save: function(data) {
-      console.log("save:", this.options.save, data);
+      var result, self = this,
+        save = this.options.save,
+        saveMethod = typeof save.method;
 
-      // reset changed elements list
-      this.changed = [];
+      console.log("save:", data);
+
+      // Custom method call
+      if (saveMethod === "function") {
+        // Custom methods can return false to handle the call to start the
+        // timer themselves. Otherwise, it will start after the method call.
+        if ((result = save.method.call(this, data)) !== false && this.timer) {
+          this.start();
+        }
+      }
+
+      // Built in save method
+      else if (saveMethod === "string" && save.method in save.methods) {
+        switch(save.method) {
+          case "ajax": {
+            // TODO
+            $.ajax($.extend(save.methods, {
+              complete: function() {
+                if (self.timer) self.start();
+              }
+            }));
+            break;
+          }
+        }
+      }
     }
   });
 })(jQuery);
