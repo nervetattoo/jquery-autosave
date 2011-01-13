@@ -15,7 +15,8 @@
 (function($) {
   $.plugin("autosave", {
     options: {
-      save: {
+      save: "ajax",
+      notify: {
         onEvent: false,
         onChange: true,
         onInterval: true
@@ -49,16 +50,17 @@
         $forms: this.forms(),
         $fields: this.fields(),
         group: this.options.group,
-        interval: !isNaN(parseInt(this.options.save.onInterval))
-          ? this.options.save.onInterval : 30000,
-        eventName: typeof this.options.save.onEvent === 'string'
-          ? this.options.save.onEvent : 'autosave',
+        notify: this.options.notify,
+        interval: !isNaN(parseInt(this.options.notify.onInterval))
+          ? this.options.notify.onInterval : 30000,
+        eventName: typeof this.options.notify.onEvent === 'string'
+          ? this.options.notify.onEvent : 'autosave',
         conditions: $.isArray(this.options.conditions)
           ? this.options.conditions : null
       });
 
       // Bind to event
-      if (this.options.save.onEvent) {
+      if (this.notify.onEvent) {
         console.log("onEvent:", eventType);
 
         this.form.bind(this.eventName, function() {
@@ -67,7 +69,7 @@
       }
 
       // Start interval
-      if (this.options.save.onInterval) {
+      if (this.notify.onInterval) {
         console.log("onInterval:", this.interval);
 
         this.start(this.interval);
@@ -86,7 +88,7 @@
             // Add this element to the list of changed elements
             self.changed.push(this);
 
-            if (self.options.save.onChange) {
+            if (self.notify.onChange) {
               console.log("onUpdate:", this);
               self.notify(this);
             }
@@ -171,13 +173,14 @@
 
       // If there is a timer running, continue on to the next interval
       if (this.time && this.timer === timer) {
+        console.log("started");
         this.start();
       }
     },
 
     // performs the actual saving of data
     _save: function(data) {
-      console.log("save:", data);
+      console.log("save:", this.options.save, data);
 
       // reset changed elements list
       this.changed = [];
