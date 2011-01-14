@@ -12,36 +12,57 @@
  * Licensed under the MIT License
  */
 
-(function($) {
+;(function($, undefined) {
   $.plugin("autosave", {
     options: {
       save: {
-        method: "ajax",
-        methods: {
-          ajax: {
-            url: window.location.href,
-            method: "POST"
-          }
-        }
+        /**
+         * Methods is an array of saving methods to invoke. These methods will be
+         * invoked with this instance as the context. Each array element can contain
+         * strings, functions or objects as follows:
+         *
+         * - "string" - call built in function.
+         * - function(data) {} - simple custom function.
+         * - { method: "string" } - another way to call a built in function.
+         * - { method: function(data) {} } - another way to call a simple
+         *     custom function.
+         * - { method: "string", options: {} } - call a built in function with
+         *     custom parameters (will override default parameters).
+         * - { method: function(data, options) {}, options: {} } - call a custom
+         *     function with options passed in.
+         *
+         * The arguments passed to all functions are:
+         * - data - the data collected from form fields using jQuery.serializeArray
+         * - options - (optional) any options to pass to the method
+         */
+        methods: [{
+          method: "ajax",
+          options: {}
+        }],
+        /**
+         * Conditions is an array of methods to invoke before calling any of
+         * the data saving methods. Any condition function that returns false
+         * will prevent saving from happening. These functions will be invoked
+         * with this instance as the context and these arguments:
+         * - fields - the form fields this save request is acting upon
+         * - data - the data from those form fields
+         */
+        conditions: []
       },
       notify: {
         onEvent: false,
         onChange: true,
-        onInterval: true
+        onInterval: false
       },
       group: {
-        byForm: true,
-        byEvent: false,
-        byChanged: true,
-        byInterval: true
-      },
-      conditions: []
+        byForm: false,
+        byChanged: false,
+        byInterval: false
+      }
     },
 
     // Set up the plugin
     _initialize: function() {
-      var self = this;
-
       // We are only interested in forms and inputs
       if (!this.element.elements && !this.element.form) return;
 
@@ -51,40 +72,29 @@
         return (this.elements || this.form);
       }).data(this.name, this);
 
-      // Set up our default values
+      var self = this,
+        save = this.options.save,
+        notify = this.options.notify;
+
       $.extend(true, this, {
-        timer: null,
+        timer: undefined,
         changed: {},
+        responded: 0,
         $forms: this.forms(),
         $fields: this.fields(),
-        interval: !isNaN(parseInt(this.options.notify.onInterval))
-          ? this.options.notify.onInterval : 3000,
-        eventName: typeof this.options.notify.onEvent === "string"
-          ? this.options.notify.onEvent : "autosave",
-        conditions: $.isArray(this.options.conditions)
-          && this.options.conditions.length ? this.options.conditions : null
+        // Sanitize default values
+        interval: !isNaN(parseInt(notify.onInterval))
+          ? notify.onInterval : 3000,
+        conditions: $.isArray(save.conditions) && save.conditions.length
+          ? save.conditions : undefined,
+        eventName: typeof notify.onEvent === "string"
+          ? notify.onEvent : "autosave"
       });
 
-      // Set up changed fields for each form
+      // Set up changed input lists for each form element
       this.$forms.each(function() {
         self.changed[this.name] = [];
       });
-
-      // Bind to event
-      if (this.options.notify.onEvent) {
-        console.log("onEvent:", eventType);
-
-        this.form.bind(this.eventName, function() {
-          self._notify(this);
-        });
-      }
-
-      // Start interval
-      if (this.options.notify.onInterval) {
-        console.log("onInterval:", this.interval);
-
-        this.start(this.interval);
-      }
 
       // Set up form listeners to all form inputs.
       // For IE bug fixes, see: https://gist.github.com/770449
@@ -99,13 +109,27 @@
             // Add this element to the list of changed elements
             self.changed[this.form.name].push(this);
 
-            if (self.options.notify.onChange) {
+            if (notify.onChange) {
               console.log("onUpdate:", this);
               self._notify(this);
             }
           }
         });
       });
+
+      if (notify.onEvent) {
+        console.log("onEvent:", eventType);
+
+        this.$forms.bind(this.eventName, function() {
+          self._notify(this);
+        });
+      }
+
+      if (notify.onInterval) {
+        console.log("onInterval:", this.interval);
+
+        this.start(this.interval);
+      }
     },
 
     // Returns the form fields associated with elements
@@ -135,7 +159,7 @@
         if (this.timer) this.stop();
 
         this.timer = setTimeout(function() {
-          self._notify(null, self.timer);
+          self._notify(undefined, self.timer);
         }, interval || this.interval);
     },
 
@@ -147,7 +171,7 @@
 
     // Whether or not the plugin satisfies its save conditions when
     // matched against current targets (or all if none are passed)
-    passes: function(targets) {
+    passes: function(targets, data) {
       var self = this, passes = true;
 
       targets = targets || this.$fields;
@@ -155,8 +179,7 @@
       if (this.conditions) {
         $.each(this.conditions, function(i, condition) {
           if ($.isFunction(condition)) {
-            return passes = (condition.call(self.$element,
-              self.$forms, targets, self.options, self.changed) !== false);
+            return (passes = condition.call(self, targets, data)) !== false;
           }
         });
       }
@@ -165,61 +188,135 @@
     },
 
     // Notifies the plugin of a change and handles it accordingly
-    _notify: function(targets, timer) {
+    _notify: function(targets, context) {
       var requests, self = this, group = this.options.group;
 
-      console.log("notify:", targets, timer);
+      console.log("notify:", targets, context);
 
       // If there is a timer running, only proceed if it called this function
-      if (!this.timer || group.byInterval && this.timer === timer) {
+      if (!this.timer || group.byInterval && this.timer === context) {
+        // TODO -- implement group.byForm, flatten for now
+        var changed = [];
+
+        // For now, flatten the changed array
+        $.each(this.changed, function(formName, changedFields) {
+          changed = changed.concat(changedFields);
+        });
+
         // Fields may be all fields, or only those that have changed
-        var $fields = group.byChanged ? this.fields(this.changed)
+        var $fields = group.byChanged ? this.fields(changed)
           : (targets ? this.fields(targets) : this.$fields);
 
-        // TODO -- implement group.byForm
-
-        // Loop through all of our conditions and make sure they pass
-        if ($fields.length && (!this.conditions || this.passes($fields))) {
-          this._save($fields.serializeArray());
-        }
+        // Save as long as we have something to save
+        if ($fields.length) this._save($fields);
 
         // If there is a timer running, start the next interval
-        else if (this.timer) {
-          console.log("start");
-          this.start();
-        }
+        else if (this.timer) this.start(this.interval);
       }
     },
 
     // performs the actual saving of data
-    _save: function(data) {
-      var result, self = this,
-        save = this.options.save,
-        saveMethod = typeof save.method;
+    _save: function($fields) {
+      var self = this, methods = this._saveMethods,
+        data = $fields.serializeArray();
 
       console.log("save:", data);
 
-      // Custom method call
-      if (saveMethod === "function") {
-        // Custom methods can return false to handle the call to start the
-        // timer themselves. Otherwise, it will start after the method call.
-        if ((result = save.method.call(this, data)) !== false && this.timer) {
-          this.start();
-        }
-      }
+      $.each(this.options.save.methods, function(i, handler) {
+        if (handler) {
+          var save = {}, handlerType = typeof handler;
 
-      // Built in save method
-      else if (saveMethod === "string" && save.method in save.methods) {
-        switch(save.method) {
-          case "ajax": {
-            // TODO
-            $.ajax($.extend(save.methods, {
-              complete: function() {
-                if (self.timer) self.start();
-              }
-            }));
-            break;
+          // Custom function without options
+          if (handlerType === "function") {
+            save.method = handler;
           }
+
+          // Built in function with default options
+          else if (handlerType === "string" && handler in methods) {
+            save = methods[handler];
+          }
+
+          // Objects can contain custom or built in handler methods
+          // with or without options
+          else if (handlerType === "object" && "method" in handler) {
+            handlerType = typeof handler.method;
+
+            // Custom handler method
+            if (handlerType === "function") {
+              save = handler;
+            }
+
+            // Built in handler method with
+            else if (handlerType === "string" && handler.method in methods) {
+              save = methods[handler.method];
+
+              // Merge in user defined options, if they exist
+              if (typeof handler.options === "object") {
+                save.options = $.extend(true, {}, save.options, handler.options);
+              }
+            }
+          }
+
+          // Loop through any provided pre-save conditions and proceed if they
+          // all pass (none of them return a false value).
+          if (!self.conditions || self.passes($fields, data)) {
+            // Actually call the method. If the method returns false, the call
+            // to _saveComplete should be handled within the method.
+            return (save.method && save.method.call(self, data, save.options) !== false);
+          }
+
+          // Completed this save handler
+          self._saveComplete();
+        }
+      });
+    },
+
+    // Should be called after successful save in order to cleanup and get
+    // ready for the next round of saving.
+    _saveComplete: function(status) {
+      var self = this;
+
+      // Increment the number of responses we've got back
+      this.responded++;
+
+      // If all the save methods have responded, do cleanup work
+      if (this.responded === this.options.save.methods.length) {
+        this.responded = 0;
+
+        // Reset changed elements
+        $.each(this.changed, function(i) {
+          self.changed[i] = [];
+        });
+
+        // If there is a timer running on completion, start the next interval
+        if (this.timer) this.start(this.interval);
+      }
+    },
+
+    // Stores all built in save methods
+    _saveMethods: {
+      ajax: {
+        method: function(data, options) {
+          $.ajax($.extend(true, {}, options, {
+            data: data,
+            context: this,
+            complete: function(xhr, status) {
+              // Call the user defined function first, if it exists
+              if ($.isFunction(options.complete)) {
+                options.complete.apply(this, arguments);
+              }
+
+              // Cleanup
+              this._saveComplete(status);
+            }
+          }));
+
+          // We will handle the call to the completion function
+          return false;
+        },
+        options: {
+          url: window.location.href,
+          method: "POST"
         }
       }
     }
