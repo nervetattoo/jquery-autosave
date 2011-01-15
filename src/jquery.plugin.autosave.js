@@ -1,15 +1,18 @@
 /**
- * jQuery.plugin.autosave
+ * @fileOverview jQuery.plugin.autosave
+ * Unobtrusively saves form data based on certain conditions
  *
- * @author Kyle Florence (kyle[dot]florence[at]gmail[dot]com)
+ * @author Kyle Florence
+ * @website https://github.com/kflorence/jquery-autosave
+ * @version 0.1.0
  *
- * Based on jQuery.autosave by:
+ * Inspired by the jQuery.autosave plugin by Mads Erik Forberg
+ * and Raymond Julin:
  *
- *  @author Raymond Julin (raymond[dot]julin[at]gmail[dot]com)
- *  @author Mads Erik Forberg (mads[at]hardware[dot]no)
- *  @author Simen Graaten (simen[at]hardware[dot]no)
+ * @see https://github.com/nervetattoo/jquery-autosave
  *
- * Licensed under the MIT License
+ * Copyright (c) 2011 Kyle Florence
+ * Dual licensed under the MIT and GPL Licenses.
  */
 
 ;(function($, undefined) {
