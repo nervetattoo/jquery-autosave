@@ -6,12 +6,19 @@
  * @website https://github.com/nervetattoo/jquery-autosave
  * @version 1.0.0
  *
- * Dual licensed under the MIT and GPL Licenses.
+ * Dual licensed under the MIT and BSD Licenses.
  */
 
 ;(function($, undefined) {
-
-  // Attaches a class instance to an element
+  /**
+   * Creates and attaches an instance of jQuery.autosave to elements.
+   *
+   * @param {Object} [options]
+   *    User supplied options to override the defaults within the plugin.
+   *
+   * @returns {jQuery}
+   *    The elements that invoked this function.
+   */
   $.fn.autosave = function(options) {
     var $elements = this, instance = $.extend({}, $.autosave);
 
@@ -22,77 +29,31 @@
     return this;
   }
 
-  // The autosave class
+  /**
+   * @class The jQuery.autosave class.
+   */
   $.autosave = {
+    /**
+     * @namespace The default options for this plugin.
+     */
     options: {
-      /**
-      * Triggers is an array of methods that will trigger an autosave. Each
-      * array element can contain strings, functions or objects as follows:
-      *
-      * - "string" - call built in function.
-      * - function(data) {} - simple custom function.
-      * - { method: "string" } - another way to call a built in function.
-      * - { method: function(data) {} } - another way to call a simple
-      *     custom function.
-      * - { method: "string", options: {} } - call a built in function with
-      *     custom parameters (will override default parameters).
-      * - { method: function(data, options) {}, options: {} } - call a custom
-      *     function with options passed in.
-      *
-      * The arguments passed to all functions are:
-      * - options - (optional) any options to pass to the method
-      */
       triggers: ["interval"],
-      /**
-      * Filters is an array of methods to apply to the dataset. By default,
-      * all form fields are used when data is saved, but the scope of data can
-      * be restricted by using filters. Each array element can contain strings
-      * or functions as follows:
-      *
-      * - "string" - call a built in function.
-      * - function() {} - call a custom function.
-      *
-      * The arguments passed to all functions are:
-      * - $fields - the jQuery fields to filter on
-      */
-      fields: ["changed"],
-      /**
-      * Conditions is an array of methods to invoke before calling any of
-      * the data saving methods. Any condition function that returns false
-      * will prevent saving from happening.
-      *
-      * The arguments passed to all functions are:
-      * - $fields - the form fields this save request is acting upon
-      * - data - the data from those form fields
-      */
+      filters: [],
       conditions: [],
-      /**
-      * Methods is an array of saving methods to invoke. These methods will be
-      * invoked with this instance as the context. Each array element can contain
-      * strings, functions or objects as follows:
-      *
-      * - "string" - call built in function.
-      * - function(data) {} - simple custom function.
-      * - { method: "string" } - another way to call a built in function.
-      * - { method: function(data) {} } - another way to call a simple
-      *     custom function.
-      * - { method: "string", options: {} } - call a built in function with
-      *     custom parameters (will override default parameters).
-      * - { method: function(data, options) {}, options: {} } - call a custom
-      *     function with options passed in.
-      *
-      * The arguments passed to all functions are:
-      * - data - the data collected from form fields using jQuery.serializeArray
-      * - options - (optional) any options to pass to the method
-      */
       methods: ["ajax"]
     },
 
-    // Set up the plugin
+    /**
+     * Initializes the plugin.
+     *
+     * @param {jQuery} $elements
+     *    The set of jQuery objects that this plugin was called with.
+     * @param {Object} [options]
+     *    User supplied options to merge with the defaults.
+     */
     initialize: function($elements, options) {
       var self = this;
 
-      // Merge user supplied options with defaults
       $.extend(true, this.options, options);
       $.extend(this, {
         timer: 0,
@@ -103,7 +64,7 @@
         $fields: this.getFields($elements)
       });
 
-      // Listen to form inputs
+      // Bind to each form field and listen for changes
       this.$fields.each(function() {
         // For IE bug fixes, see: https://gist.github.com/770449
         var eventType = (this.type == "checkbox" ||
@@ -121,34 +82,40 @@
       // Which options use the callback-style syntax
       var callbackOptions = ["triggers", "fields", "conditions", "methods"];
 
-      // Set up callback functions
+      // Parse each callback array and extract the methods
       $.each(callbackOptions, function(i, name) {
         var callbacks = self.options[name], validCallbacks = [];
 
+        // Callbacks should be an array of strings, functions or objects
         if ($.isArray(callbacks) && callbacks.length) {
           $.each(callbacks, function(i, callback) {
-            callback = self.getCallback(callback, self.callbacks[name]);
+            callback = self.getCallback(callback, self._callbacks[name]);
 
-            // At the very least, we need a valid callback method
-            if ($.isFunction(callback.method)) {
-              validCallbacks.push(callback);
-            }
+            // If callback has a valid method, we can use it
+            if ($.isFunction(callback.method)) validCallbacks.push(callback);
           });
         }
 
-        // Store actual callback methods, or undefined if there are none
-        self.options[name] = validCallbacks.length ? validCallbacks : undefined;
+        self.options[name] = validCallbacks;
       });
 
-      // Set up triggers
-      if (this.options.triggers) {
-        $.each(this.options.triggers, function(i, callback) {
-          callback.method.call(self, callback.options);
-        });
-      }
+      // Set up save triggers
+      $.each(this.options.triggers, function(i, callback) {
+        callback.method.call(self, callback.options);
+      });
     },
 
-    // Returns the form fields associated with elements
+    /**
+     * Get the form fields associated with elements.
+     *
+     * @param {jQuery|Element|Element[]} [elements]
+     *    The elements to extract form fields from. Can be of type jQuery
+     *    or an array of DOM elements. If no elements are passed, the form
+     *    fields passed to the plugin on initialization will be used.
+     *
+     * @returns {jQuery}
+     *    A jQuery object containing the form fields.
+     */
     getFields: function(elements) {
       var $elements = elements ? $(elements) : this.$elements;
 
@@ -158,7 +125,17 @@
       });
     },
 
-    // Returns the forms associated with elements
+    /**
+     * Get the forms associated with elements.
+     *
+     * @param {jQuery|Element|Element[]} [elements]
+     *    The elements to extract form fields from. Can be of type jQuery
+     *    or an array of DOM elements. If no elements are passed, the form
+     *    fields passed to the plugin on initialization will be used.
+     *
+     * @returns {jQuery}
+     *    A jQuery object containing the forms.
+     */
     getForms: function(elements) {
       var $elements = elements ? $(elements) : this.$elements;
 
@@ -168,32 +145,43 @@
       }).get()));
     },
 
-    // Attempts to return a callback method from methods
+    /**
+     * Get a callback method from a list of methods.
+     *
+     * @param {String|Object|function} method
+     *    The method to get. Can be a string or object that represents one of
+     *    the built in callback methods, or a custom function to use instead.
+     *
+     * @param {Object} methods
+     *    An object containing the list of methods to search in.
+     *
+     * @returns {Object}
+     *    The callback object. This will be an empty object if the callback
+     *    could not be found. If it was found, this object will contain at the
+     *    very least a "method" property and potentially an "options" property.
+     */
     getCallback: function(method, methods) {
       var callback = {}, methodType = typeof method;
 
-      // Custom function without options
       if (methodType === "function") {
+        // Custom function with no options
         callback.method = method;
-      }
-
-      // Built in function with default options
-      else if (methodType === "string" && method in methods) {
+      } else if (methodType === "string" && method in methods) {
+        // Built in method, use default options
         callback = methods[method];
-      }
+      } else if (methodType === "object") {
+        callback = method, methodType = typeof callback.method;
 
-      // Objects can contain custom or built in handler methods
-      else if (methodType === "object") {
-        callback = method;
-        methodType = typeof callback.method;
-
-        // Built in handler method with options
         if (methodType === "string" && callback.method in methods) {
+          // Built in method
           callback = methods[callback.method];
 
-          // Merge in user defined options, if they exist
           if (typeof method.options === "object") {
+            // Merge in user supplied options with the defaults
             callback.options = $.extend(true, {}, callback.options, method.options);
+          } else {
+            // Set options up as an empty object if none are found
+            callback.options = {};
           }
         }
       }
@@ -201,60 +189,94 @@
       return callback;
     },
 
-    // Starts the autosave interval loop
+    /**
+     * Starts an autosave interval loop, stopping the current one if needed.
+     *
+     * @param {number} interval
+     *    An integer value representing the time between intervals in
+     *    milliseconds.
+     */
     startInterval: function(interval) {
         var self = this;
 
         interval = interval || this.interval;
 
-        if (this.timer) {
-          this.stopInterval();
-        }
+        // If there is a timer running, stop it
+        if (this.timer) this.stopInterval();
 
-        if (interval) {
+        // Make sure we have a valid interval
+        if (!isNaN(parseInt(interval))) {
           this.timer = setTimeout(function() {
             self.save(undefined, self.timer);
           }, interval);
         }
     },
 
-    // Stops the autosave interval loop
+    /**
+     * Stops an autosave interval loop.
+     */
     stopInterval: function() {
       clearTimeout(this.timer);
       this.timer = undefined;
     },
 
-    // Called whenever a form value changes
+    /**
+     * Called whenever a form field value changes.
+     *
+     * @param {Element} field
+     *    The DOM Element whose value has changed.
+     */
     valueChanged: function(field) {
       this.changed.push(field);
 
-      // Allows for custom handling of changed fields
+      // Fire an event for the form containing the field.
       $(field.form).triggerHandler("valueChanged", [field]);
     },
 
-    // Attempt to save. Will only complete if certain conditions are met.
-    save: function(fields, context) {
+    /**
+     * Attemps to save form field data.
+     *
+     * @param {jQuery|Element|Element[]} [fields]
+     *    The form fields to extract data from. Can be of type jQuery, a DOM
+     *    element, or an array of DOM elements. If no fields are passed, the
+     *    fields passed to the plugin on initialization will be used.
+     *
+     * @param {mixed} [caller]
+     *    Used to denote who called this function. If passed, it is typically
+     *    the ID of the current interval timer and may be used to check if the
+     *    timer called this function.
+     */
+    save: function(fields, caller) {
       var self = this, $fields = fields ? this.getFields(fields) : this.$fields;
 
-      if (this.options.fields) {
-        $.each(this.options.fields, function(i, callback) {
+      // If there are no save methods defined, we can't save
+      if (this.options.methods.length) {
+        // Filter the scope of fields
+        $.each(this.options.filters, function(i, callback) {
           $fields = callback.method.call(self, callback.options, $fields);
         });
-      }
 
-      if ($fields.length && this.options.methods) {
-        var data = $fields.serializeArray();
+        if ($fields.length) {
+          var proceed = true, data = $fields.serializeArray();
 
-        // Loop through pre-save conditions and proceed only if they pass
-        if (this.conditions($fields, data, context) !== false) {
-          $.each(this.options.methods, function(i, callback) {
-            self.$queue.queue("saveMethods", function() {
-              // Methods that return false should handle the call to complete()
-              if (callback.method.call(self, callback.options, data) !== false) {
-                self.complete();
-              }
-            });
+          // Loop through pre-save conditions and proceed only if they pass
+          $.each(this.options.conditions, function(i, callback) {
+            return (proceed = callback.method.call(
+              self, callback.options, $fields, data, caller
+            )) !== false;
           });
+
+          if (proceed) {
+            // Add all of our save methods to the queue
+            $.each(this.options.methods, function(i, callback) {
+              self.$queue.queue("saveMethods", function() {
+                // Methods that return false should handle the call to complete()
+                if (callback.method.call(self, callback.options, data) !== false) {
+                  self.complete();
+                }
+              });
+            });
+          }
         }
       }
 
@@ -262,49 +284,43 @@
       this.complete();
     },
 
-    // Matches supplied arguments against conditions to see if they pass
-    conditions: function() {
-      var self = this, args = arguments, proceed = true;
-
-      if (this.options.conditions) {
-        $.each(this.options.conditions, function(i, callback) {
-          return (proceed = callback.method.apply(self, args)) !== false;
-        });
-      }
-
-      return proceed;
-    },
-
-    // Called upon save method completion. Performs necessary cleanup.
-    complete: function(caller) {
+    /**
+     * Called whenever a save method completes; performs necessary cleanup.
+     */
+    complete: function() {
       var queue = this.$queue.queue("saveMethods");
 
-      // Queue exists, has remaining items and we are dequeueing
-      if (queue && queue.length) {
-        this.$queue.dequeue("saveMethods");
-      }
+      // Dequeue the next function if queue is not empty
+      if (queue && queue.length) this.$queue.dequeue("saveMethods");
 
       // Queue does not exist or is empty, proceed to cleanup
       else if (!queue || !queue.length) {
         this.changed = [];
 
         // If there is a timer running, start the next interval
-        if (this.timer) {
-          this.startInterval();
-        }
+        if (this.timer) this.startInterval();
       }
     },
 
-    callbacks: {
+    /**
+     * @namespace Holds all of the built in callback methods.
+     */
+    _callbacks: {
+      /**
+       * @namespace Holds the callback objects for triggering an autosave.
+       */
       triggers: {
-        // Save whenever an event fires
         event: {
+          /**
+           * Attaches an arbitrary event to all of the forms autosave is
+           * attached to and attempts to save any time that event is fired.
+           */
           method: function(options) {
             var self = this;
 
             if (typeof options.eventName === "string") {
               this.$forms.bind(options.eventName, function() {
-                self.notify(this);
+                self.save(this);
               });
             }
           },
@@ -312,20 +328,23 @@
             eventName: "autosave"
           }
         },
-
-        // Save whenever a form field value changes
         change: {
-          method: function(options) {
+          /**
+           * Binds the "valueChanged" event to all of the forms autosave is
+           * attached to and attempts to sae any time that event is fired.
+           */
+          method: function() {
             var self = this;
 
-            this.$forms.bind("autosave.onChange", function(e, field) {
+            this.$forms.bind("valueChanged", function(e, field) {
               self.save(field);
             });
           }
         },
-
-        // Save at regular intervals
         interval: {
+          /**
+           * Creates an interval loop that will attempt to save periodically.
+           */
           method: function(options) {
             if (!isNaN(parseInt(options.interval))) {
               this.startInterval(this.interval = options.interval);
@@ -337,26 +356,43 @@
         }
       },
 
-      // Limit which fields we will use data from
+      /**
+       * @namespace Holds the callback objects for filtering fields for the dataset.
+       */
       fields: {
         changed: {
-          method: function(options, $fields) {
+          /**
+           * Changes the scope of fields to only those whose value has changed
+           * since the last autosave.
+           */
+          method: function() {
             return this.getFields(this.changed);
           }
         }
       },
 
-      // Only save if these conditions are met
+      /**
+       * @namespace Holds the callback objects for pre-save conditions.
+       */
       conditions: {
+        /**
+         * Whether or not to wait until an interval completes to save.
+         */
         waitForInterval: {
-          method: function($fields, data, context) {
+          method: function($fields, data, caller) {
             return (!this.timer || this.timer === context);
           }
         }
       },
 
-      // Methods for saving the collected data
+      /**
+       * @namespace Holds the callback objects for the different saving methods.
+       */
       methods: {
+        /**
+         * Saves form field data using a jQuery.ajax call. Any options that can
+         * be passed to the jQuery.ajax method are valid here.
+         */
         ajax: {
           method: function(options, data) {
             var self = this;
@@ -364,12 +400,13 @@
             $.ajax($.extend(true, {}, options, {
               data: data,
               complete: function(xhr, status) {
-                // Call the user defined function first, if it exists
                 if ($.isFunction(options.complete)) {
+                  // Call user-provided complete function first
                   options.complete.apply(self, arguments);
                 }
 
-                self.complete("ajax");
+                // We are done now, cleanup
+                self.complete();
               }
             }));
 
