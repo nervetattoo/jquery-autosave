@@ -165,8 +165,3 @@ Verified to work correctly on Internet Explorer 6.0+, Firefox 3.0+ and Chrome 7.
 * [Kyle Florence](https://github.com/kflorence/)
 * [Raymond Julin](https://github.com/nervetattoo/)
 * Mads Erik Forberg
-
-## License
-
-Copyright (c) 2011 Kyle Florence, Raymond Julin and Mads Erik forberg  
-Dual licensed under the MIT and BSD licenses.
