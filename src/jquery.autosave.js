@@ -37,10 +37,13 @@
      * @namespace The default options for this plugin.
      */
     options: {
-      triggers: ["interval"],
-      filters: [],
       conditions: [],
-      methods: ["ajax"]
+      events: {
+        changed: "changed"
+      },
+      filters: [],
+      methods: ["ajax"],
+      triggers: ["changed"]
     },
 
     /**
@@ -74,7 +77,10 @@
         $(this).bind(eventType, function(e) {
           if (e.type == "change" || (e.type == "propertychange"
             && /^(checked|selectedIndex)$/.test(window.event.propertyName))) {
-            self.valueChanged(this);
+            self.changed.push(this);
+
+            // Fire an event for the form containing the field.
+            $(this.form).triggerHandler(self.events.changed, [this]);
           }
         });
       });
@@ -221,19 +227,6 @@
     },
 
     /**
-     * Called whenever a form field value changes.
-     *
-     * @param {Element} field
-     *    The DOM Element whose value has changed.
-     */
-    valueChanged: function(field) {
-      this.changed.push(field);
-
-      // Fire an event for the form containing the field.
-      $(field.form).triggerHandler("valueChanged", [field]);
-    },
-
-    /**
      * Attemps to save form field data.
      *
      * @param {jQuery|Element|Element[]} [fields]
@@ -310,6 +303,19 @@
        * @namespace Holds the callback objects for triggering an autosave.
        */
       triggers: {
+        change: {
+          /**
+           * Binds the "valueChanged" event to all of the forms autosave is
+           * attached to and attempts to save any time that event is fired.
+           */
+          method: function() {
+            var self = this;
+
+            this.$forms.bind(self.events.changed, function(e, field) {
+              self.save(field);
+            });
+          }
+        },
         event: {
           /**
            * Attaches an arbitrary event to all of the forms autosave is
@@ -320,25 +326,12 @@
 
             if (typeof options.eventName === "string") {
               this.$forms.bind(options.eventName, function() {
-                self.save(this);
+                self.save(this, options.eventName);
               });
             }
           },
           options: {
             eventName: "autosave"
-          }
-        },
-        change: {
-          /**
-           * Binds the "valueChanged" event to all of the forms autosave is
-           * attached to and attempts to sae any time that event is fired.
-           */
-          method: function() {
-            var self = this;
-
-            this.$forms.bind("valueChanged", function(e, field) {
-              self.save(field);
-            });
           }
         },
         interval: {
@@ -359,7 +352,7 @@
       /**
        * @namespace Holds the callback objects for filtering fields for the dataset.
        */
-      fields: {
+      filters: {
         changed: {
           /**
            * Changes the scope of fields to only those whose value has changed
@@ -376,13 +369,20 @@
        */
       conditions: {
         /**
-         * Whether or not to wait until an interval completes to save.
+         * Only save if the interval called the save method
          */
-        waitForInterval: {
+        interval: {
           method: function($fields, data, caller) {
             return (!this.timer || this.timer === context);
           }
-        }
+        },
+        /**
+         * Only save if at least one of the field values has changed
+         */
+        changed: {
+          method: function($fields, data, caller) {
+            return (this.changed.length > 0);
+          }
       },
 
       /**
