@@ -27,7 +27,7 @@ initialization. All options are optional.
 * **methods** _Array_ ["ajax"] An array of callback methods that will determine how the form field data
   will be saved. By default, the [jQuery.ajax](http://api.jquery.com/jQuery.ajax/) will POST the data
   to the current browser URL.
-* **triggers** _Array_ ["changed"] An array of callback methods that will start the saving process. By
+* **triggers** _Array_ ["change"] An array of callback methods that will start the saving process. By
   default, a save will be attempted any time a form field value changes.
 
 ## Callback Methods
@@ -168,5 +168,5 @@ Verified to work correctly on Internet Explorer 6.0+, Firefox 3.0+ and Chrome 7.
 
 ## License
 
-Copyright (c) 2011 Kyle Florence, Raymond Julin and Mads Erik forberg.
+Copyright (c) 2011 Kyle Florence, Raymond Julin and Mads Erik forberg  
 Dual licensed under the MIT and BSD licenses.
