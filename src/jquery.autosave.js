@@ -43,7 +43,7 @@
       },
       filters: [],
       methods: ["ajax"],
-      triggers: ["changed"]
+      triggers: ["change"]
     },
 
     /**
@@ -80,7 +80,7 @@
             self.changed.push(this);
 
             // Fire an event for the form containing the field.
-            $(this.form).triggerHandler(self.events.changed, [this]);
+            $(this.form).triggerHandler(self.options.events.changed, [this]);
           }
         });
       });
@@ -311,7 +311,7 @@
           method: function() {
             var self = this;
 
-            this.$forms.bind(self.events.changed, function(e, field) {
+            this.$forms.bind(this.options.events.changed, function(e, field) {
               self.save(field);
             });
           }
