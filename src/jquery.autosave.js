@@ -383,6 +383,7 @@
           method: function($fields, data, caller) {
             return (this.changed.length > 0);
           }
+        }
       },
 
       /**
