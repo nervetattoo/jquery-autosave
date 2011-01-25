@@ -1,0 +1,78 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+      "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <title>jQuery.autosave Unit Tests</title>
+    <link rel="stylesheet" type="text/css" href="qunit/qunit.css" />
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.4.4.min.js"></script>
+    <script type="text/javascript" src="../src/jquery.autosave.js"></script>
+
+    <script type="text/javascript" src="qunit/qunit.js"></script>
+    <script type="text/javascript" src="unit/core.js"></script>
+    <script type="text/javascript" src="unit/triggers.js"></script>
+
+    <script type="text/javascript">
+      jQuery(function() {
+        // Log to console
+        QUnit.log = function(test) {
+          if (typeof console !== "undefined" && console.log) {
+          console.log(test.message + ":", test.result);
+          }
+        }
+      });
+    </script>
+  </head>
+  <body>
+    <h1 id="qunit-header">jQuery.autosave Unit Tests</h1>
+    <h2 id="qunit-banner"></h2>
+    <h2 id="qunit-userAgent"></h2>
+    <ol id="qunit-tests"></ol>
+
+    <!-- Test markup -->
+    <div id="qunit-fixture">
+      <div id="invalidElement1">
+        <p>I am invalid because I am not a form or input.</p>
+      </div>
+
+      <div id="invalidElement2">
+        <p>I am also invalid, even though I contain a form with inputs.</p>
+
+        <form name="testForm1" id="testForm1">
+          <p>I am valid. I am a form that contains inputs.</p>
+
+          <!-- text field -->
+          <input name="text" type="text" value="" />
+
+          <!-- textarea -->
+          <textarea name="textarea"></textarea>
+
+          <!-- radio group -->
+          <label class="radio"><input name="radio" type="radio" value="1" />1</label>
+          <label class="radio"><input name="radio" type="radio" value="2" />2</label>
+          <label class="radio"><input name="radio" type="radio" value="3" />3</label>
+
+          <!-- checkbox group -->
+          <label class="checkbox"><input name="checkbox" type="checkbox" value="1" />1</label>
+          <label class="checkbox"><input name="checkbox" type="checkbox" value="2" />2</label>
+          <label class="checkbox"><input name="checkbox" type="checkbox" value="3" />3</label>
+
+          <!-- select list -->
+          <select name="select">
+            <option value=""></option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+          </select>
+
+          <!-- multiple select list -->
+          <select name="multi-select" multiple="multiple">
+            <option value=""></option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+          </select>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>
