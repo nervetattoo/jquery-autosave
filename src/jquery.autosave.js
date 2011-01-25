@@ -435,7 +435,7 @@
           },
           options: {
             url: window.location.href,
-            method: "POST"
+            type: "POST"
           }
         }
       }
