@@ -62,7 +62,7 @@ the keyword _this_ making it easy to call any class property or function from wi
 The following are the built-in callback methods for _options.triggers_.
 
 * **change**  
-  Attempts to save any time a form value changes.
+  Attempts to save any time a form field value changes.
 * **event**  
   Attaches an arbitrary event to all of the forms autosave is attached to and attempts to save any
   time that event is fired.
@@ -139,8 +139,7 @@ automatic call to _this.complete()_ and let you handle the call yourself.
 The default arguments passed to these callback methods are:
 
 * **options** _Object_  
-  An object of key/value pairs that may be used to configure the callback method. Any option that is
-  accepted by the jQuery.ajax method is also acceptable here.
+  An object of key/value pairs that may be used to configure the callback method.
 * **data** _Object_  
   An array of objects containing the data gathered from the filtered form fields. This data is gathered
   using [jQuery's .serialize()](http://api.jquery.com/serialize/).
@@ -149,7 +148,7 @@ The default arguments passed to these callback methods are:
 
     event(event[, ...]);
 
-The events that jQuery.autosave binds are listed in _options.events_. Each event handler may be passed
+The events that jQuery.autosave binds to are listed in _options.events_. Each event handler may be passed
 any number of arguments, although the first argument will always be the
 [jQuery Event Object](http://api.jquery.com/category/events/event-object/).
 
