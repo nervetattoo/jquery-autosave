@@ -62,8 +62,7 @@ the keyword _this_ making it easy to call any class property or function from wi
 The following are the built-in callback methods for _options.triggers_.
 
 * **change**  
-  Binds the _options.event.change_ event to all of the forms autosave is attached to and attempts to
-  save any time that event is fired.
+  Attempts to save any time a form value changes.
 * **event**  
   Attaches an arbitrary event to all of the forms autosave is attached to and attempts to save any
   time that event is fired.
