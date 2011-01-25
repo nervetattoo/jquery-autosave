@@ -11,7 +11,8 @@
 
 ;(function($, undefined) {
   /**
-   * Creates and attaches an instance of jQuery.autosave to elements.
+   * Looks for form elements inside of the elements passed into the plugin
+   * and attaches an autosave instance to them.
    *
    * @param {Object} [options]
    *    User supplied options to override the defaults within the plugin.
@@ -20,11 +21,18 @@
    *    The elements that invoked this function.
    */
   $.fn.autosave = function(options) {
-    var $elements = this, instance = $.extend({}, $.autosave);
+    var instance = $.extend({}, $.autosave),
+      $forms = instance.getForms(this),
+      $fields = instance.getFields(this);
 
-    instance.initialize($elements.filter(function() {
-      return (this.elements || this.form);
-    }).data("autosave", instance), options);
+    // Make sure we have at least one form and form field
+    if ($forms.length && $fields.length) {
+      // Store instance in form and form fields
+      $forms.add($fields).data("autosave", instance);
+
+      // Initialize the instance
+      instance.initialize(this, $forms, $fields, options);
+    }
 
     return this;
   }
@@ -33,17 +41,36 @@
    * @class The jQuery.autosave class.
    */
   $.autosave = {
-    /**
-     * @namespace The default options for this plugin.
-     */
     options: {
-      conditions: [],
-      events: {
-        changed: "changed"
-      },
+      /**
+       * An array of callback methods that will start the saving process.
+       */
+      triggers: ["change"],
+      /**
+       * An array of callback methods that reduces the set of fields to save
+       * data from.
+       */
       filters: [],
+      /**
+       * An array of callback methods that will determine whether or not
+       * autosave.
+       */
+      conditions: [],
+      /**
+       * An array of callback methods that will determine how the form field
+       * data will be saved.
+       */
       methods: ["ajax"],
-      triggers: ["change"]
+      /**
+       * Contains a set of key/value pairs that allow you to change the name of
+       * events used within the plugin.
+       */
+      events: {
+        /**
+         * The name to assign to the event fired whenever a form value changes.
+         */
+        change: "autosave.change"
+      }
     },
 
     /**
@@ -51,10 +78,17 @@
      *
      * @param {jQuery} $elements
      *    The set of jQuery objects that this plugin was called with.
+     *
+     * @param {jQuery} $forms
+     *    The set of jQuery form elements that the plugin detected.
+     *
+     * @param {jQuery} $fields
+     *    The set of jQuery form field elements that the plugin detected.
+     *
      * @param {Object} [options]
      *    User supplied options to merge with the defaults.
      */
-    initialize: function($elements, options) {
+    initialize: function($elements, $forms, $fields, options) {
       var self = this;
 
       $.extend(true, this.options, options);
@@ -62,9 +96,9 @@
         timer: 0,
         changed: [],
         $queue: $({}),
-        $elements: $elements,
-        $forms: this.getForms($elements),
-        $fields: this.getFields($elements)
+        $forms: $forms,
+        $fields: $fields,
+        $elements: $elements
       });
 
       // Bind to each form field and listen for changes
@@ -80,13 +114,13 @@
             self.changed.push(this);
 
             // Fire an event for the form containing the field.
-            $(this.form).triggerHandler(self.options.events.changed, [this]);
+            $(this.form).triggerHandler(self.options.events.change, [this]);
           }
         });
       });
 
       // Which options use the callback-style syntax
-      var callbackOptions = ["triggers", "fields", "conditions", "methods"];
+      var callbackOptions = ["triggers", "filters", "conditions", "methods"];
 
       // Parse each callback array and extract the methods
       $.each(callbackOptions, function(i, name) {
@@ -112,43 +146,43 @@
     },
 
     /**
-     * Get the form fields associated with elements.
+     * Get the form fields associated with elements. This method can be called
+     * statically.
      *
-     * @param {jQuery|Element|Element[]} [elements]
+     * @param {jQuery|Element|Element[]} elements
      *    The elements to extract form fields from. Can be of type jQuery
-     *    or an array of DOM elements. If no elements are passed, the form
-     *    fields passed to the plugin on initialization will be used.
+     *    or an array of DOM elements.
      *
      * @returns {jQuery}
      *    A jQuery object containing the form fields.
      */
     getFields: function(elements) {
-      var $elements = elements ? $(elements) : this.$elements;
+      var $elements = $(elements);
 
       // Extract inputs from form elements
-      return $elements.map(function() {
+      return $elements.length ? $elements.map(function() {
         return this.elements ? $.makeArray(this.elements) : this;
-      });
+      }) : $elements;
     },
 
     /**
-     * Get the forms associated with elements.
+     * Get the forms associated with elements. This method can be called
+     * statically.
      *
      * @param {jQuery|Element|Element[]} [elements]
      *    The elements to extract form fields from. Can be of type jQuery
-     *    or an array of DOM elements. If no elements are passed, the form
-     *    fields passed to the plugin on initialization will be used.
+     *    or an array of DOM elements.
      *
      * @returns {jQuery}
      *    A jQuery object containing the forms.
      */
     getForms: function(elements) {
-      var $elements = elements ? $(elements) : this.$elements;
+      var $elements = $(elements);
 
       // Weed out duplicates
-      return $($.unique($elements.map(function() {
+      return $elements.length ? $($.unique($elements.map(function() {
         return this.elements ? this : this.form;
-      }).get()));
+      }).get())) : $elements;
     },
 
     /**
@@ -296,12 +330,9 @@
     },
 
     /**
-     * @namespace Holds all of the built in callback methods.
+     * @namespace Holds all of the built-in callback methods.
      */
     _callbacks: {
-      /**
-       * @namespace Holds the callback objects for triggering an autosave.
-       */
       triggers: {
         change: {
           /**
@@ -311,7 +342,7 @@
           method: function() {
             var self = this;
 
-            this.$forms.bind(this.options.events.changed, function(e, field) {
+            this.$forms.bind(this.options.events.change, function(e, field) {
               self.save(field);
             });
           }
@@ -331,7 +362,7 @@
             }
           },
           options: {
-            eventName: "autosave"
+            eventName: "autosave.save"
           }
         },
         interval: {
@@ -348,10 +379,6 @@
           }
         }
       },
-
-      /**
-       * @namespace Holds the callback objects for filtering fields for the dataset.
-       */
       filters: {
         changed: {
           /**
@@ -363,10 +390,6 @@
           }
         }
       },
-
-      /**
-       * @namespace Holds the callback objects for pre-save conditions.
-       */
       conditions: {
         /**
          * Only save if the interval called the save method
@@ -385,10 +408,6 @@
           }
         }
       },
-
-      /**
-       * @namespace Holds the callback objects for the different saving methods.
-       */
       methods: {
         /**
          * Saves form field data using a jQuery.ajax call. Any options that can

@@ -1,11 +1,13 @@
 # jQuery.autosave
 
+    $("form").autosave({...});
+
 The jQuery.autosave plugin automatically and unobtrusively saves form field data based on a set of critera.
 Saving can be broken down into a simple four step process:
 
-1. **An event triggers an autosave.**
-2. **The scope of data gathered from the form fields is narrowed to what we wish to save.**
-3. **We test the current state of the plugin against a series of conditions.**
+1. **A trigger fires, starting the autosave process.**
+2. **The set of form fields to gather data from is reduced to those that are needed.**
+3. **The current state of the plugin is tested against a series of conditions.**
 4. **If these conditions pass, we save the data using any number of methods.**
 
 This plugin works strictly with forms and form fields of any type. Any other elements fed to the plugin will
@@ -17,18 +19,19 @@ of the plugin to each form.
 Options is a set of key/value pairs that can be passed into the plugin as the first argument upon
 initialization. All options are optional.
 
-* **conditions** _Array_ [] An array of callback methods that will determine whether or not autosave.
-  By default, no conditions need to be met.
-* **events** _Object_ Contains a set of key/value pairs that allow you to change the name of events
-  used within the plugin.
-  * **changed** _String_ "changed" The name to assign to the event fired whenever a form value changes.
+* **triggers** _Array_ ["change"] An array of callback methods that will start the saving process. By
+  default, a save will be attempted any time a form field value changes.
 * **filters** _Array_ [] An array of callback methods that reduces the set of fields to save data from.
   By default, all of the fields found by the plugin on initialization will be used in the dataset.
+* **conditions** _Array_ [] An array of callback methods that will determine whether or not autosave.
+  By default, no conditions need to be met.
 * **methods** _Array_ ["ajax"] An array of callback methods that will determine how the form field data
   will be saved. By default, the [jQuery.ajax](http://api.jquery.com/jQuery.ajax/) will POST the data
   to the current browser URL.
-* **triggers** _Array_ ["change"] An array of callback methods that will start the saving process. By
-  default, a save will be attempted any time a form field value changes.
+* **events** _Object_ Contains a set of key/value pairs that allow you to change the name of events
+  used within the plugin.
+  * **change** _String_ "autosave.change" The name to assign to the event fired whenever a form value
+  changes.
 
 ## Callback Methods
 
@@ -130,9 +133,9 @@ The events that jQuery.autosave binds are listed in _options.events_. Each event
 any number of arguments, although the first argument will always be the
 [jQuery Event Object](http://api.jquery.com/category/events/event-object/).
 
-* **changed(event, field)** _String_ "changed" This event is bound to each form jQuery.autosave detects
-  upon initialization and is fired whenever a form field value changes. The argument _field_ refers to the
-  element that triggered the event.
+* **change(event, field)** _String_ "autosave.change" This event is bound to each form element and is
+  fired whenever a form field value changes. The argument _field_ refers to the element that triggered
+  the event.
 
 ## Examples
 
