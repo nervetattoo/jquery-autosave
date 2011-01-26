@@ -8,7 +8,7 @@ test("Requirements", function() {
 });
 
 test("Constructor", function() {
-  expect(19);
+  expect(24);
 
   var $test1 = $("#testForm1").autosave();
   var test1 = $test1.data("autosave");
@@ -22,14 +22,12 @@ test("Constructor", function() {
 
   ok(test1events.change || test1events.propertychange, "test1 is listening for changes to form fields");
 
-  var callbackOptions = ["triggers", "filters", "conditions", "methods"];
+  $.each(test1.callbacks, function(name, value) {
+    equal($.isArray(value), true, "test1 callbacks." + name + " is an array");
 
-  $.each(callbackOptions, function(i, name) {
-    ok($.isArray(test1.options[name]), "test1 options." + name + " is an array");
-
-    $.each(test1.options[name], function(i, callback) {
-      equal(typeof callback, "object", "test1 options." + name + "[" + i + "] is an object");
-      ok($.isFunction(callback.method), "test1 options." + name + "[" + i + "] is a function");
+    $.each(value, function(i, callback) {
+      equal(typeof callback, "object", "test1 callbacks." + name + "[" + i + "] is an object");
+      equal($.isFunction(callback.method), true, "test1 callbacks." + name + "[" + i + "].method is a function");
     });
   });
 
