@@ -323,7 +323,8 @@
      *    timer called this function.
      */
     save: function(fields, caller) {
-      var self = this, $fields = fields ? this.getFields(fields) : this.$fields;
+      var data, self = this, saveData = false,
+        $fields = fields ? this.getFields(fields) : this.$fields;
 
       // If there are no save methods defined, we can't save
       if (this.callbacks.method.length) {
@@ -333,22 +334,25 @@
 
         // No fields = no data
         if ($fields.length) {
-          var data, conditionsPassed = true;
-
           // Build our dataset
           $.each(this.callbacks.data, function(i, callback) {
               data = callback.method.call(self, callback.options, $fields);
           });
 
           // Loop through pre-save conditions and proceed only if they pass
-          $.each(this.callbacks.condition, function(i, callback) {
-            return (conditionsPassed = callback.method.call(
-              self, callback.options, $fields, data, caller
-            )) !== false;
-          });
+          if (this.callbacks.condition.length) {
+            $.each(this.callbacks.condition, function(i, callback) {
+              return (saveData = callback.method.call(
+                self, callback.options, $fields, data, caller
+              )) !== false;
+            });
+          }
+
+          // There are no save conditions
+          else saveData = true;
 
           // Can we save?
-          if (conditionsPassed) {
+          if (saveData) {
             $.each(this.callbacks.method, function(i, callback) {
               // Add all of our save methods to the queue
               self.$queue.queue("saveMethodQueue", function() {
@@ -363,7 +367,7 @@
       }
 
       // Start the dequeue process
-      this.complete(conditionsPassed);
+      this.complete(saveData);
     },
 
     /**
