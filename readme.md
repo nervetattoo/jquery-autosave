@@ -2,188 +2,233 @@
 
     $("form").autosave({...});
 
-The jQuery.autosave plugin automatically and unobtrusively saves form field data based on a set of critera.
-Saving can be broken down into a simple four step process:
+The jQuery.autosave plugin automatically and unobtrusively saves form field data based on a set of critera. Saving can be broken down into a simple five step process:
 
-1. **A trigger fires, starting the autosave process.**
-2. **The set of form fields to gather data from is reduced to those that are needed.**
-3. **The current state of the plugin is tested against a series of conditions.**
-4. **If these conditions pass, we save the data using any number of methods.**
+1. **An event triggers the autosave process.**
+2. **The scope form fields is narrowed to those that are needed.**
+3. **The data from those form fields is extracted and stored for later use.**
+4. **The current state of the plugin is tested against a series of conditions.**
+5. **If these conditions pass, we save the data using any number of methods.**
 
-This plugin works strictly with forms and form fields of any type. Any other elements fed to the plugin will
-be ignored. Currently, if you wish to autosave data on a per form basis, you should attach a separate instance
-of the plugin to each form.
+This plugin works strictly with forms and form fields of any type. Any other elements fed to the plugin will be ignored. Currently, if you wish to autosave data on a per form basis, you should attach a separate instance of the plugin to each form.
 
 ## Options
 
-Options is a set of key/value pairs that can be passed into the plugin as the first argument upon
-initialization. All options are optional.
+Options is a set of key/value pairs that can be passed into the plugin as the first argument upon initialization. All options are optional.
 
-* **triggers** _Array_ ["change"]  
-  An array of callback methods that will start the saving process. By default, a save will be attempted
-  any time a form field value changes.
-* **filters** _Array_ []  
-  An array of callback methods that reduces the set of fields to save data from. By default, all of the
-  fields found by the plugin on initialization will be used in the dataset.
-* **conditions** _Array_ []  
-  An array of callback methods that will determine whether or not autosave. By default, no conditions
-  need to be met.
-* **methods** _Array_ ["ajax"]  
-  An array of callback methods that will determine how the form field data will be saved. By default,
-  [jQuery.ajax](http://api.jquery.com/jQuery.ajax/) will POST the data to the current browser URL.
+* **namespace** _String_ - Default: "autosave"  
+  The namespace to append to the event names and class names used within the plugin.
+* **save** _Object_  
+  Contains a set of key/value pairs that define callback methods for the autosave process described above.
+  * **trigger** _String, Object, Array, function_ - Default: "change"  
+    The callback method(s) that will start the saving process. The built-in callback method "change" willbe used by default.
+  * **scope** _String, Object, Array, function_ - Default: "changed"  
+    The callback method(s) that will determine the scope of form fields to gather data from. The built-in callback method "changed" will be used by default.
+  * **data** _String, Object, Array, function_ - Default: "serializeArray"  
+    The callback method(s) that will determine how to build the dataset from the form fields.
+  * **condition** _String, Object, Array, function_ - Default: undefined  
+    The callback method(s) that will determine whether or not save based on the current state of the plugin. No conditions need to pass in order to save, by default.
+  * **method** _String, Object, Array, function_ - Default: "ajax"  
+    The callback method(s) that will determine how the form field data will be saved. The built-in callback method "ajax" will be used by default.
 * **events** _Object_  
   Contains a set of key/value pairs that allow you to change the name of events used within the plugin.
-  * **change** _String_ "autosave.change"  
-    The name to assign to the event fired whenever a form value changes.
+  * **save** _String_ - Default: "save"  
+    This event will attempt to save anytime it is fired. It is bound to each form passed into the plugin on initialization.
 
 ## Callback Methods
 
-Several of the properties above are composed of an array of **callback methods**. These methods are invoked
-within the plugin in the order that they are defined in the array. They may contain _Strings_, _Objects_
-or _Functions_. Thus, any of the following are valid ways of defining a callback method:
+Several of the properties above are composed of **callback methods**. These methods are invoked by the plugin during the autosave process. If an Array of methods is found, they will be invoked in the order they were defined in the Array. Any of the following are valid ways of defining a callback method:
 
-* **"callbackMethod"** _or_ **{ method: "callbackMethod"[, options: {}] }**  
-  Calls a built-in callback method, optionally passing an options object to merge with the default
-  options as defined in the plugin.
-* **function() {}** _or_ **{ method: function() {}[, options: {}] }**  
-  Calls a custom callback method, optionally passing an options object to pass into the function.
+* **"callbackMethod"** _String_, **{ method: "callbackMethod"[, options: {}] }** _Object_  
+  Calls a built-in callback method, optionally passing an options object to merge with the default options as defined in the plugin.
+* **function() {}** _function_, **{ method: function() {}[, options: {}] }** _Object_  
+  Calls a custom, user-defined callback method, optionally passing an options object into that function.
+
+You may also define multiple callback methods for any property by simply putting them into an array.
 
 ## Built-in Callback Methods
 
-There are several built-in callback methods that provide you an easy way to set up the most common saving
-processes. The names of these methods are detailed below along with the arguments that will be passed in
-when the methods are invoked. Every callback method is called with the current instance as the context of
-the keyword _this_ making it easy to call any class property or function from within the callback method.
+There are several built-in callback methods that provide you an easy way to set up the most common saving processes. The names of these methods are detailed below along with the arguments that will be passed in when the methods are invoked. Every callback method is called with the current instance as the context of the keyword _this_ making it easy to call any class property or function from within the callback method.
 
-### Triggers
+-------------------------------------------------------------------------------
+
+### save.trigger
 
     trigger([options]);
 
-The following are the built-in callback methods for _options.triggers_.
+#### Methods
+
+The built-in callback methods for triggering an autosave.
 
 * **change**  
   Attempts to save any time a form field value changes.
 * **event**  
-  Attaches an arbitrary event to all of the forms autosave is attached to and attempts to save any
-  time that event is fired.
+  Attaches an arbitrary event to all of the forms autosave is attached to and attempts to save any time that event is fired.
 * **interval**  
   Creates an interval loop that will attempt to save periodically.
 
-The default arguments passed to these callback methods are:
+#### Arguments
+
+These are the arguments that are passed to triggering callback methods.
 
 * **options** _Object_  
   An object of key/value pairs that may be used to configure the callback method.
 
-### Filters
+#### Return Value
 
-    filter(options, $fields);
+Trigger methods do not require a return value.
 
-The following are the built-in callback methods for _options.filters_. **Each filtering callback method
-should return a jQuery object containing the filtered form fields**.
+-------------------------------------------------------------------------------
+
+### save.scope
+
+    scope(options, $fields);
+
+#### Methods
+
+The built-in callback methods for narrowing the scope of form fields.
 
 * **changed**  
   Filters fields down to only those that have had their value changed since the last autosave.
 
-The default arguments passed to these callback methods are:
+#### Arguments
+
+These are the arguments that are passed to scoping callback methods.
 
 * **options** _Object_  
   An object of key/value pairs that may be used to configure the callback method.
 * **$fields** _jQuery_  
-  A jQuery object containing the current scope of form fields. Generally, this is either a single form
-  field whose value has changed, or all of the fields detected by the plugin on initialization. Keep in
-  mind that filter callback methods change the current scope of fields, meaning further callback methods
-  will be given the new set of fields to filter on.
+  A jQuery object containing the current scope of form fields. Generally, this is either a single form field whose value has changed, or all of the fields detected by the plugin on initialization. Keep in mind that filter callback methods change the current scope of fields, meaning further callback methods will be given the new set of fields to filter on.
 
-### Conditions
+#### Return Value
+
+Scope methods should **return a jQuery object** containing the filtered fields.
+
+-------------------------------------------------------------------------------
+
+### save.data
+
+    data(options, $fields);
+
+#### Methods
+
+The built-in callback methods for generating data from the form fields.
+
+* **serializeArray**  
+  Encodes a set of form elements as an array of names and values using jQuery's [.serializeArray()](http://api.jquery.com/serializeArray/) function.
+
+#### Arguments
+
+These are the arguments that are passed to scoping callback methods.
+
+* **options** _Object_  
+  An object of key/value pairs that may be used to configure the callback method.
+* **$fields** _jQuery_  
+  A jQuery object containing the current scope of form fields.
+
+#### Return Value
+
+Data methods should **return some kind of dataset**, most likely containing the values from the form fields.
+
+-------------------------------------------------------------------------------
+
+### save.condition
 
     condition(options, $fields, data[, caller]);
 
-The following are the built-in callback methods for _options.conditions_. **Each conditional callback
-method should return either _true_ or _false_.** If _false_ is returned, it will halt the saving process.
-Any _non-false_ value is treated the same as returning _true_.
+#### Methods
+
+The built-in callback methods for determining whether or not to save.
 
 * **changed**  
   Only save if at least one form field value has changed since the last autosave.
 * **interval**  
   Only save on intervals. If anything else triggers an autosave, it will fail.
 
-The default arguments passed to these callback methods are:
+#### Arguments
+
+These are the arguments that are passed to conditional callback methods.
 
 * **options** _Object_  
   An object of key/value pairs that may be used to configure the callback method.
 * **$fields** _jQuery_  
-  A jQuery object containing the current scope of form fields. The fields given here have already been
-  filtered.
+  A jQuery object containing the current scope of form fields. The fields given here have already been filtered.
 * **data** _Array_  
-  An array of objects containing the data gathered from the filtered form fields. This data is gathered
-  using the jQuery [.serialize()](http://api.jquery.com/serialize/) method.
+  An array of objects containing the data gathered from the form fields.
 * **caller** _String, Number_  
-  Used to denote who called the save method. This is generally undefined, but may contain the ID of the
-  current interval timer or an event name.
+  Used to denote who called the save method. This is generally undefined, but may contain the ID of the current interval timer or an event name.
 
-### Methods
+#### Return Value
+
+Condition methods should **return a Boolean value (true or false)**. Returning any _non-false_ value is treated the same as returning _true_.
+
+-------------------------------------------------------------------------------
+
+### save.method
 
     method(options, data);
 
-These are the built-in callback methods for _options.methods_. **Note that _this.complete()_ will be
-called immediately after the invocation of the saving callback method**. The method _this.complete()_
-is a special internal function that tells the plugin the save has finished and that it can now move onto
-the next method in the array (or perform necessary cleanup if there are no remaining save methods). If
-you are defining a custom callback method and the plugin to wait for some asynchronous task to finish
-before _this.complete()_ is called, your callback method should return _false_. This will prevent the
-automatic call to _this.complete()_ and let you handle the call yourself.
+#### Methods
+
+The built-in callback methods for determining how to save the form field data.
 
 * **ajax**  
-  Will save the data using [jQuery.ajax](http://api.jquery.com/jQuery.ajax/).
+  Will save the data using the [jQuery.ajax](http://api.jquery.com/jQuery.ajax/) function.
 
-The default arguments passed to these callback methods are:
+#### Arguments
+
+These are the arguments that are passed to saving callback methods.
 
 * **options** _Object_  
   An object of key/value pairs that may be used to configure the callback method.
 * **data** _Object_  
-  An array of objects containing the data gathered from the filtered form fields. This data is gathered
-  using [jQuery's .serialize()](http://api.jquery.com/serialize/).
+  The data gathered from the form fields.
+
+#### Return value
+
+Saving methods do not require a return value. However, **if your callback method contains asynchronous code, such as an AJAX request, it must return false** and contain a call to the function _this.complete()_ internally. The function _this.complete()_ tells the plugin the save method has finished executing, allowing it to execute the next save method or perform necessary cleanup if there are no save methods left to execute.
 
 ## Events
 
     event(event[, ...]);
 
-The events that jQuery.autosave binds to are listed in _options.events_. Each event handler may be passed
-any number of arguments, although the first argument will always be the
-[jQuery Event Object](http://api.jquery.com/category/events/event-object/).
+Any custom events that have been defined in the plugin are listed below.
 
-* **change(event, field)** _String_ "autosave.change"  
-  This event is bound to each form element and is fired whenever a form field value changes. The argument
-  _field_ refers to the element that triggered the event.
+### events.save
+
+When triggered, this event will attempt to save form field data for a specific form. You can trigger this event using jQuery's [.triggerHandler](http://api.jquery.com/triggerHandler/) function on any form autosave is bound to.
 
 ## Examples
 
+Here are just a few ways you can use this plugin.
+
+### Default behavior
+
     $("form").autosave();
 
-Without passing any options into the plugin, it will default to saving any time a form field value is
-changed.
-
-    $("form").autosave({
-      triggers: ["interval"],
-      filters: ["changed"],
-      conditions: ["changed"],
-      methods: ["ajax"]
-    });
-
-This will AJAX post form field data every 30 seconds, filtering the dataset down to only fields
-whose form value has changed since the last autosave, and only saving if at least one form field value
-has changed since the last autosave attempt.
+1. **trigger** An autosave is triggered any time a form field value changes.
+2. **scope** The scope is narrowed to include only the field whose value has changed.
+3. **data** Data is gathered using jQuery's [.serialize()](http://api.jquery.com/serialize/) function.
+4. **condition** There are no conditions that need to pass to complete this save.
+5. **method** The data is posted to the current browser URL using the [jQuery.ajax](http://api.jquery.com/jQuery.ajax/) function.
 
 ## Requirements
 
-jQuery.autosave required jQuery version 1.3 or higher.
+jQuery.autosave requires:
+
+* jQuery version 1.3+
 
 ## Compatibility
 
-Verified to work correctly on Internet Explorer 6.0+, Firefox 3.0+ and Chrome 7.0+
+Verified to work correctly on:
+
+* Chrome 7.0+
+* Firefox 3.0+
+* Internet Explorer 6.0+
 
 ## Contributers
 
 * [Kyle Florence](https://github.com/kflorence/)
 * [Raymond Julin](https://github.com/nervetattoo/)
 * Mads Erik Forberg
+
