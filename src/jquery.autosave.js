@@ -11,6 +11,26 @@
 
 ;(function($, undefined) {
   /**
+   * Fixes binding the "change" event to checkboxes and select[type=multiple]
+   * for Internet Explorer. See: https://gist.github.com/770449
+   */
+  var bind = function(eventType, element, callback) {
+    if (eventType !== "change") $(element).bind(eventType, callback);
+    else {
+      eventType = (element.type == "checkbox"
+        || element.tagName.toLowerCase() == "select" && element.multiple)
+        && ("onpropertychange" in document.body) ? "propertychange" : "change";
+
+      $(element).bind(eventType, function(e) {
+        if (e.type == "change" || (e.type == "propertychange"
+          && /^(checked|selectedIndex)$/.test(window.event.propertyName))) {
+          callback.call(this, e);
+        }
+      });
+    }
+  }
+
+  /**
    * Looks for form elements inside of the elements passed into the plugin
    * and attaches an autosave instance to them.
    *
@@ -43,33 +63,59 @@
   $.autosave = {
     options: {
       /**
-       * An array of callback methods that will start the saving process.
+       * The namespace to append after event and class names.
        */
-      triggers: ["change"],
+      namespace: "autosave",
       /**
-       * An array of callback methods that reduces the set of fields to save
-       * data from.
+       * Contains a set of key/value pairs that represent the steps of the
+       * saving process.
        */
-      filters: [],
+      save: {
+        /**
+        * Events that will start the saving process.
+        */
+        trigger: "change",
+        /**
+        * Reduces the scope of form fields involved in the save.
+        */
+        scope: "changed",
+        /**
+         * How to build the dataset from the form fields.
+         */
+        data: "serializeArray",
+        /**
+        * Determine whether or not to autosave based on certain conditions.
+        */
+        condition: undefined,
+        /**
+        * An array of callback methods that will determine how the form field
+        * data will be saved.
+        */
+        method: "ajax"
+      },
       /**
-       * An array of callback methods that will determine whether or not
-       * autosave.
-       */
-      conditions: [],
-      /**
-       * An array of callback methods that will determine how the form field
-       * data will be saved.
-       */
-      methods: ["ajax"],
-      /**
-       * Contains a set of key/value pairs that allow you to change the name of
-       * events used within the plugin.
-       */
+      * Contains a set of key/value pairs that allow you to change the name of
+      * events used within the plugin. Keep in mind that these events will be
+      * namespaced on initialization.
+      */
       events: {
         /**
-         * The name to assign to the event fired whenever a form value changes.
+         * This event is attached to each form autosave is attached to. When
+         * triggered, it will attempt to save the form.
          */
-        change: "autosave.change"
+        save: "save"
+      },
+      /**
+       * Contains a set of key/value pairs that allow you to change the name of
+       * classes used within the plugin. Keep in mind that these classes will be
+       * namespaced on initialization.
+       */
+      classes: {
+        /**
+         * The class name that will be applied to elements whose value has been
+         * changed but not yet saved.
+         */
+        changed: "changed"
       }
     },
 
@@ -94,53 +140,56 @@
       $.extend(true, this.options, options);
       $.extend(this, {
         timer: 0,
-        changed: [],
+        callbacks: {},
         $queue: $({}),
         $forms: $forms,
         $fields: $fields,
         $elements: $elements
       });
 
+      // Add namespace to events
+      $.each(this.options.events, function(key, eventName) {
+        self.options.events[key] = eventName + "." + self.options.namespace;
+      });
+
+      // Add namespace to classes
+      $.each(this.options.classes, function(key, className) {
+        self.options.classes[key] = className + "-" + self.options.namespace;
+      });
+
       // Bind to each form field and listen for changes
-      this.$fields.each(function() {
-        // For IE bug fixes, see: https://gist.github.com/770449
-        var eventType = (this.type == "checkbox" ||
-          this.tagName.toLowerCase() == "select" && this.multiple)
-          && ("onpropertychange" in document.body) ? "propertychange" : "change";
-
-        $(this).bind(eventType, function(e) {
-          if (e.type == "change" || (e.type == "propertychange"
-            && /^(checked|selectedIndex)$/.test(window.event.propertyName))) {
-            self.changed.push(this);
-
-            // Fire an event for the form containing the field.
-            $(this.form).triggerHandler(self.options.events.change, [this]);
-          }
+      $fields.each(function() {
+        bind("change", this, function(e) {
+          $(this).addClass(self.options.classes.changed);
         });
       });
 
-      // Which options use the callback-style syntax
-      var callbackOptions = ["triggers", "filters", "conditions", "methods"];
+      // Bind the "save" event to each form
+      $forms.bind(this.options.events.save, function(e) {
+        self.save(this, e.type);
+      });
 
-      // Parse each callback array and extract the methods
-      $.each(callbackOptions, function(i, name) {
-        var callbacks = self.options[name], validCallbacks = [];
+      // Parse each save option and extract the callback methods
+      $.each(this.options.save, function(key, value) {
+        var validCallbacks = [];
 
-        // Callbacks should be an array of strings, functions or objects
-        if ($.isArray(callbacks) && callbacks.length) {
-          $.each(callbacks, function(i, callback) {
-            callback = self.getCallback(callback, self._callbacks[name]);
+        if (value) {
+          // Store callback in an array, if it isn't one already
+          if (!$.isArray(value)) value = [value];
+
+          $.each(value, function(i, callback) {
+            callback = self.getCallback(callback, self._callbacks[key]);
 
             // If callback has a valid method, we can use it
             if ($.isFunction(callback.method)) validCallbacks.push(callback);
           });
         }
 
-        self.options[name] = validCallbacks;
+        self.callbacks[key] = validCallbacks;
       });
 
       // Set up save triggers
-      $.each(this.options.triggers, function(i, callback) {
+      $.each(this.callbacks.trigger, function(i, callback) {
         callback.method.call(self, callback.options);
       });
     },
@@ -277,26 +326,32 @@
       var self = this, $fields = fields ? this.getFields(fields) : this.$fields;
 
       // If there are no save methods defined, we can't save
-      if (this.options.methods.length) {
-        // Filter the scope of fields
-        $.each(this.options.filters, function(i, callback) {
+      if (this.callbacks.method.length) {
+        $.each(this.callbacks.scope, function(i, callback) {
           $fields = callback.method.call(self, callback.options, $fields);
         });
 
+        // No fields = no data
         if ($fields.length) {
-          var proceed = true, data = $fields.serializeArray();
+          var data, conditionsPassed = true;
+
+          // Build our dataset
+          $.each(this.callbacks.data, function(i, callback) {
+              data = callback.method.call(self, callback.options, $fields);
+          });
 
           // Loop through pre-save conditions and proceed only if they pass
-          $.each(this.options.conditions, function(i, callback) {
-            return (proceed = callback.method.call(
+          $.each(this.callbacks.condition, function(i, callback) {
+            return (conditionsPassed = callback.method.call(
               self, callback.options, $fields, data, caller
             )) !== false;
           });
 
-          if (proceed) {
-            // Add all of our save methods to the queue
-            $.each(this.options.methods, function(i, callback) {
-              self.$queue.queue("saveMethods", function() {
+          // Can we save?
+          if (conditionsPassed) {
+            $.each(this.callbacks.method, function(i, callback) {
+              // Add all of our save methods to the queue
+              self.$queue.queue("saveMethodQueue", function() {
                 // Methods that return false should handle the call to complete()
                 if (callback.method.call(self, callback.options, data) !== false) {
                   self.complete();
@@ -308,21 +363,24 @@
       }
 
       // Start the dequeue process
-      this.complete();
+      this.complete(conditionsPassed);
     },
 
     /**
      * Called whenever a save method completes; performs necessary cleanup.
      */
-    complete: function() {
-      var queue = this.$queue.queue("saveMethods");
+    complete: function(resetChanged) {
+      var queue = this.$queue.queue("saveMethodQueue");
 
       // Dequeue the next function if queue is not empty
-      if (queue && queue.length) this.$queue.dequeue("saveMethods");
+      if (queue && queue.length) this.$queue.dequeue("saveMethodQueue");
 
       // Queue does not exist or is empty, proceed to cleanup
       else if (!queue || !queue.length) {
-        this.changed = [];
+        // Reset changed by default
+        if (resetChanged !== false) {
+          this.$fields.removeClass(this.options.classes.changed);
+        }
 
         // If there is a timer running, start the next interval
         if (this.timer) this.startInterval();
@@ -333,42 +391,50 @@
      * @namespace Holds all of the built-in callback methods.
      */
     _callbacks: {
-      triggers: {
+      trigger: {
+        /**
+         * Attempt to save any time a form field value changes.
+         */
         change: {
-          /**
-           * Binds the "valueChanged" event to all of the forms autosave is
-           * attached to and attempts to save any time that event is fired.
-           */
-          method: function() {
-            var self = this;
+          method: function(options) {
+            var self = this,
+              $fields = options.filter ? this.$fields.filter(options.filter)
+                : this.$fields;
 
-            this.$forms.bind(this.options.events.change, function(e, field) {
-              self.save(field);
+            $fields.each(function() {
+              bind("change", this, function(e, field) {
+                self.save(field, e.type);
+              });
             });
+          },
+          options: {
+            filter: undefined
           }
         },
+        /**
+         * Attempt to save any time an event occurs on some element.
+         */
         event: {
-          /**
-           * Attaches an arbitrary event to all of the forms autosave is
-           * attached to and attempts to save any time that event is fired.
-           */
           method: function(options) {
-            var self = this;
+            var self = this, $element = $(options.element);
 
-            if (typeof options.eventName === "string") {
-              this.$forms.bind(options.eventName, function() {
-                self.save(this, options.eventName);
+            if (typeof options.eventType === "string") {
+              $element.each(function() {
+                bind(options.eventType, this, function(e) {
+                  self.save(undefined, e.type);
+                });
               });
             }
           },
           options: {
-            eventName: "autosave.save"
+            element: undefined,
+            eventType: "click"
           }
         },
+        /**
+         * Creates an interval loop that will attempt to save periodically.
+         */
         interval: {
-          /**
-           * Creates an interval loop that will attempt to save periodically.
-           */
           method: function(options) {
             if (!isNaN(parseInt(options.interval))) {
               this.startInterval(this.interval = options.interval);
@@ -379,36 +445,46 @@
           }
         }
       },
-      filters: {
+      scope: {
+        /**
+         * Changes the scope of fields to only those whose value has changed
+         * since the last autosave.
+         */
         changed: {
-          /**
-           * Changes the scope of fields to only those whose value has changed
-           * since the last autosave.
-           */
-          method: function() {
-            return this.getFields(this.changed);
+          method: function(options, $fields) {
+            return $fields.filter("." + this.options.classes.changed);
           }
         }
       },
-      conditions: {
+      data: {
+        /**
+         * Gather data using jQuery's .serializeArray() method.
+         */
+        serializeArray: {
+          method: function(options, $fields) {
+            return $fields.serializeArray();
+          }
+        }
+      },
+      condition: {
         /**
          * Only save if the interval called the save method
          */
         interval: {
-          method: function($fields, data, caller) {
-            return (!this.timer || this.timer === context);
+          method: function(options, $fields, data, caller) {
+            return (!this.timer || this.timer === caller);
           }
         },
         /**
          * Only save if at least one of the field values has changed
          */
         changed: {
-          method: function($fields, data, caller) {
-            return (this.changed.length > 0);
+          method: function(options, $fields) {
+            return $fields.filter("." + this.options.classes.changed).length > 0;
           }
         }
       },
-      methods: {
+      method: {
         /**
          * Saves form field data using a jQuery.ajax call. Any options that can
          * be passed to the jQuery.ajax method are valid here.
@@ -417,8 +493,7 @@
           method: function(options, data) {
             var self = this;
 
-            $.ajax($.extend(true, {}, options, {
-              data: data,
+            $.ajax($.extend(true, { data: data }, options, {
               complete: function(xhr, status) {
                 if ($.isFunction(options.complete)) {
                   // Call user-provided complete function first
