@@ -5,7 +5,7 @@
 The jQuery.autosave plugin automatically and unobtrusively saves form field data based on a set of critera. Saving can be broken down into a simple five step process:
 
 1. **An event triggers the autosave process.**
-2. **The scope form fields is narrowed to those that are needed.**
+2. **The scope of form fields is narrowed to those that are needed.**
 3. **The data from those form fields is extracted and stored for later use.**
 4. **The current state of the plugin is tested against a series of conditions.**
 5. **If these conditions pass, we save the data using any number of methods.**
@@ -50,7 +50,7 @@ You may also define multiple callback methods for any property by simply putting
 
 There are several built-in callback methods that provide you an easy way to set up the most common saving processes. The names of these methods are detailed below along with the arguments that will be passed in when the methods are invoked. Every callback method is called with the current instance as the context of the keyword _this_ making it easy to call any class property or function from within the callback method.
 
--------------------------------------------------------------------------------
+---
 
 ### save.trigger
 
@@ -78,7 +78,7 @@ These are the arguments that are passed to triggering callback methods.
 
 Trigger methods do not require a return value.
 
--------------------------------------------------------------------------------
+---
 
 ### save.scope
 
@@ -104,7 +104,7 @@ These are the arguments that are passed to scoping callback methods.
 
 Scope methods should **return a jQuery object** containing the filtered fields.
 
--------------------------------------------------------------------------------
+---
 
 ### save.data
 
@@ -130,7 +130,7 @@ These are the arguments that are passed to scoping callback methods.
 
 Data methods should **return some kind of dataset**, most likely containing the values from the form fields.
 
--------------------------------------------------------------------------------
+---
 
 ### save.condition
 
@@ -162,7 +162,7 @@ These are the arguments that are passed to conditional callback methods.
 
 Condition methods should **return a Boolean value (true or false)**. Returning any _non-false_ value is treated the same as returning _true_.
 
--------------------------------------------------------------------------------
+---
 
 ### save.method
 
