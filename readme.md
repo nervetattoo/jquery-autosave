@@ -36,6 +36,8 @@ Options is a set of key/value pairs that can be passed into the plugin as the fi
   Contains a set of key/value pairs that allow you to change the name of events used within the plugin. Keep in mind that these events will be namespaced on initialization like: "eventName.namespace"
   * **save** _String_ - Default: "save"  
     This event will attempt to save anytime it is fired. It is bound to each form passed into the plugin on initialization.
+  * **saved** _String_ - Default: "saved"  
+    This event is triggered on each form whenever autosave finishes saving form data. It can be bound to if you need to be notified after saving is completed.
 * **classes** _Object_  
   Contains a set of key/value pairs that allow yout o chang the name of classes used within the plugin. Keep in mind that these classes will be namespaced on initialization like: "namespace-className"
   * **changed** _String_ - Default: "changed"  
