@@ -4,11 +4,11 @@
 
 The jQuery.autosave plugin automatically and unobtrusively saves form field data based on a set of critera. Saving can be broken down into a simple five step process:
 
-1. **An event triggers the autosave process.**
-2. **The scope of form fields is narrowed to those that are needed.**
-3. **The data from those form fields is extracted and stored for later use.**
-4. **The current state of the plugin is tested against a series of conditions.**
-5. **If these conditions pass, we save the data using any number of methods.**
+1. An event triggers the autosave process.
+2. The scope of form fields is narrowed to those that are needed.
+3. The data from those form fields is extracted and stored for later use.
+4. The current state of the plugin is tested against a series of conditions.
+5. If these conditions pass, we save the data using any number of methods.
 
 This plugin works strictly with forms and form fields of any type. Any other elements fed to the plugin will be ignored. Currently, if you wish to autosave data on a per form basis, you should attach a separate instance of the plugin to each form.
 
@@ -236,8 +236,6 @@ When triggered, this event will attempt to save form field data for a specific f
 This event is triggered on each form whenever autosave finishes saving form data. It can be bound to using jQuery's [.bind()](http://api.jquery.com/bind/) function if you need to be notified after saving is completed.
 
 ## Examples
-
-Here are just a few ways you can use this plugin.
 
 ### Default behavior
 
