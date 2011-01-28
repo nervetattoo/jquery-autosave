@@ -173,21 +173,13 @@
      */
     timer: 0,
     /**
-     * Holds namespaced event names.
+     * This jQuery object will hold our save method queue.
      */
-    events: {},
-    /**
-     * Holds namespaced class names.
-     */
-    classes: {},
+    $queue: $({}),
     /**
      * Holds the callback methods used by the plugin.
      */
     callbacks: {},
-    /**
-     * This jQuery object will hold our save method queue.
-     */
-    $queue: $({}),
     /**
      * Default plugin options.
      */
@@ -234,7 +226,13 @@
          * This event is attached to each form autosave is attached to. When
          * triggered, it will attempt to save the form.
          */
-        save: "save"
+        save: "save",
+        /**
+         * This event is triggered on each form whenever autosave finishes
+         * saving form data. It can be bound to if you need to be notified
+         * after saving is completed.
+         */
+        saved: "saved"
       },
       /**
        * Contains a set of key/value pairs that allow you to change the name of
@@ -275,23 +273,25 @@
 
       // Add namespace to events
       $.each(this.options.events, function(name, eventName) {
-        self.events[name] = [eventName, self.options.namespace].join(".");
+        self.options.events[name]
+          = [eventName, self.options.namespace].join(".");
       });
 
       // Add namespace to classes
       $.each(this.options.classes, function(name, className) {
-        self.classes[name] = [self.options.namespace, className].join("-");
+        self.options.classes[name]
+          = [self.options.namespace, className].join("-");
       });
 
       // Bind to each form field and listen for changes
       $fields.each(function() {
         bind("change", this, function(e) {
-          $(this).addClass(self.classes.changed);
+          $(this).addClass(self.options.classes.changed);
         });
       });
 
       // Bind the "save" event to each form
-      $forms.bind(this.events.save, function(e) {
+      $forms.bind(this.options.events.save, function(e) {
         self.save(this, e.type);
       });
 
@@ -376,7 +376,7 @@
 
         // Get rid of ignored fields
         $fields = $fields.filter(function() {
-          return !$(this).hasClass(self.classes.ignore);
+          return !$(this).hasClass(self.options.classes.ignore);
         });
 
         if ($fields.length) {
@@ -417,6 +417,10 @@
 
     /**
      * Called whenever a save method completes; performs necessary cleanup.
+     *
+     * @param {Boolean} resetChanged
+     *    Whether or not to reset which elements were changed before saving.
+     *    Defaults to true.
      */
     complete: function(resetChanged) {
       var queue = this.$queue.queue("saveMethodQueue");
@@ -424,11 +428,16 @@
       // Dequeue the next function if queue is not empty
       if (queue && queue.length) this.$queue.dequeue("saveMethodQueue");
 
+      // If queue is empty, we are done saving
+      if (queue && !queue.length) {
+        this.$forms.triggerHandler(this.options.events.saved);
+      }
+
       // Queue does not exist or is empty, proceed to cleanup
-      else if (!queue || !queue.length) {
+      if (!queue || !queue.length) {
         // Reset changed by default
         if (resetChanged !== false) {
-          this.$fields.removeClass(this.classes.changed);
+          this.$fields.removeClass(this.options.classes.changed);
         }
 
         // If there is a timer running, start the next interval
@@ -502,7 +511,7 @@
        */
       changed: {
         method: function(options, $fields) {
-          return $fields.filter("." + this.classes.changed);
+          return $fields.filter("." + this.options.classes.changed);
         }
       }
     },
@@ -548,7 +557,7 @@
        */
       changed: {
         method: function(options, $fields) {
-          return $fields.filter("." + this.classes.changed).length > 0;
+          return $fields.filter("." + this.options.classes.changed).length > 0;
         }
       }
     },
