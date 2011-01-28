@@ -185,7 +185,7 @@ Condition methods should **return a Boolean value (true or false)**. Returning a
 The built-in callback methods for determining how to save the form field data.
 
 * **ajax**  
-  Will save the data using the [jQuery.ajax](http://api.jquery.com/jQuery.ajax/) function.
+  Will save the data using the [jQuery.ajax()](http://api.jquery.com/jQuery.ajax/) function.
 
 #### Arguments
 
@@ -208,7 +208,7 @@ Any custom events that have been defined in the plugin are listed below.
 
 ### events.save
 
-When triggered, this event will attempt to save form field data for a specific form. You can trigger this event using jQuery's [.triggerHandler](http://api.jquery.com/triggerHandler/) function on any form autosave is bound to.
+When triggered, this event will attempt to save form field data for a specific form. You can trigger this event using jQuery's [.triggerHandler()](http://api.jquery.com/triggerHandler/) function on any form autosave is bound to.
 
 ---
 
@@ -228,7 +228,7 @@ Here are just a few ways you can use this plugin.
 2. **scope** The scope is narrowed to include only the field whose value has changed.
 3. **data** Data is gathered using jQuery's [.serializeArray()](http://api.jquery.com/serializeArray/) function.
 4. **condition** There are no conditions that need to pass to complete this save.
-5. **method** The data is posted to the current browser URL using the [jQuery.ajax](http://api.jquery.com/jQuery.ajax/) function.
+5. **method** The data is posted to the current browser URL using the [jQuery.ajax()](http://api.jquery.com/jQuery.ajax/) function.
 
 ## Requirements
 
