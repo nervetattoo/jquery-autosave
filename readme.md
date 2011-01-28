@@ -212,7 +212,7 @@ When triggered, this event will attempt to save form field data for a specific f
 
 ---
 
-#### events.saved
+### events.saved
 
 This event is triggered on each form whenever autosave finishes saving form data. It can be bound to using jQuery's [.bind()](http://api.jquery.com/bind/) function if you need to be notified after saving is completed.
 
