@@ -16,33 +16,52 @@ This plugin works strictly with forms and form fields of any type. Any other ele
 
 ## Options
 
-Options is a set of key/value pairs that can be passed into the plugin as the first argument upon initialization.
+    {
+      namespace: "autosave",
+      save: {
+        trigger: "change",
+        scope: false,
+        data: false,
+        condition: false,
+        method: "ajax"
+      },
+      events: {
+        save: "save",
+        saved: "saved"
+      },
+      classes: {
+        changed: "changed",
+        ignore: "ignore"
+      }
+    }
 
-* **namespace** _String_ - Default: "autosave"  
+Options is a set of key/value pairs that can be passed into the plugin as the first argument upon initialization. The default values are shown above.
+
+* **namespace** _String_  
   The namespace to append after event names and before class names that are used within the plugin.
 * **save** _Object_  
   Contains a set of key/value pairs that define callback methods for the autosave process described above.
-  * **trigger** _String, Object, Array, function_ - Default: "change"  
+  * **trigger** _String, Object, Array, function_  
     The callback method(s) that will start the saving process. The built-in callback method "change" will be used by default.
-  * **scope** _String, Object, Array, function, Boolean_ - Default: false  
+  * **scope** _String, Object, Array, function, Boolean_  
     The callback method(s) that will determine the scope of form fields to gather data from. The built-in callback method "changed" will be used by default.
-  * **data** _String, Object, Array, function, Boolean_ - Default: false  
+  * **data** _String, Object, Array, function, Boolean_  
     The callback method(s) that will determine how to build the dataset from the form fields. jQuery's [.serializeArray()](http://api.jquery.com/serializeArray/) function is used by default.
-  * **condition** _String, Object, Array, function, Boolean_ - Default: false  
+  * **condition** _String, Object, Array, function, Boolean_  
     The callback method(s) that will determine whether or not save based on the current state of the plugin. No conditions need to pass in order to save, by default.
-  * **method** _String, Object, Array, function_ - Default: "ajax"  
+  * **method** _String, Object, Array, function_  
     The callback method(s) that will determine how the form field data will be saved. The built-in callback method "ajax" will be used by default.
 * **events** _Object_  
   Contains a set of key/value pairs that allow you to change the name of events used within the plugin. Keep in mind that these events will be namespaced on initialization like: "eventName.namespace"
-  * **save** _String_ - Default: "save"  
+  * **save** _String_  
     This event will attempt to save anytime it is fired. It is bound to each form passed into the plugin on initialization.
-  * **saved** _String_ - Default: "saved"  
+  * **saved** _String_  
     This event is triggered on each form whenever autosave finishes saving form data. It can be bound to if you need to be notified after saving is completed.
 * **classes** _Object_  
   Contains a set of key/value pairs that allow yout o chang the name of classes used within the plugin. Keep in mind that these classes will be namespaced on initialization like: "namespace-className"
-  * **changed** _String_ - Default: "changed"  
+  * **changed** _String_  
     The class name that will be applied to elements whose value has been changed but not yet saved.
-  * **ignore** _String_ - Default: "ignore"  
+  * **ignore** _String_  
     Fields with this class name will be ignored by the plugin when gathering data.
 
 ## Callback Methods
