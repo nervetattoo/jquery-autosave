@@ -8,15 +8,14 @@ test("Requirements", function() {
 });
 
 test("Constructor", function() {
-  expect(24);
+  expect(18);
 
   var $test1 = $("#testForm1").autosave();
   var test1 = $test1.data("autosave");
 
   equal(typeof test1, "object", "test1 contains an autosave instance");
-  equal(test1.$elements.length, 1, "test1 was invoked with one valid element");
   equal(test1.$forms.length, 1, "test1 includes one form element");
-  equal(test1.$fields.length, 10, "test1 includes ten form input elements");
+  equal(test1.$fields.length, 11, "test1 includes eleven form input elements");
 
   var test1events = test1.$fields.data("events");
 
@@ -40,7 +39,6 @@ test("Constructor", function() {
   var $test3 = $("#testForm1 :input").autosave();
   var test3 = $test3.data("autosave");
 
-  equal(test3.$elements.length, 10, "test3 was invoked with ten valid elements");
   notDeepEqual(test3, test2, "test3 does not refer to the same autosave instance as test2");
 
   var $test4 = $("#invalidElement1").autosave();
