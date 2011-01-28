@@ -210,6 +210,12 @@ Any custom events that have been defined in the plugin are listed below.
 
 When triggered, this event will attempt to save form field data for a specific form. You can trigger this event using jQuery's [.triggerHandler](http://api.jquery.com/triggerHandler/) function on any form autosave is bound to.
 
+---
+
+#### events.saved
+
+This event is triggered on each form whenever autosave finishes saving form data. It can be bound to using jQuery's [.bind()](http://api.jquery.com/bind/) function if you need to be notified after saving is completed.
+
 ## Examples
 
 Here are just a few ways you can use this plugin.
