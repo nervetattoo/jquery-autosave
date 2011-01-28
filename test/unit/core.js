@@ -21,7 +21,7 @@ test("Constructor", function() {
 
   ok(test1events.change || test1events.propertychange, "test1 is listening for changes to form fields");
 
-  $.each(test1.callbacks, function(name, value) {
+  $.each(test1.options.save, function(name, value) {
     equal($.isArray(value), true, "test1 callbacks." + name + " is an array");
 
     $.each(value, function(i, callback) {
