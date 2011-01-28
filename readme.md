@@ -12,28 +12,36 @@ The jQuery.autosave plugin automatically and unobtrusively saves form field data
 
 This plugin works strictly with forms and form fields of any type. Any other elements fed to the plugin will be ignored. Currently, if you wish to autosave data on a per form basis, you should attach a separate instance of the plugin to each form.
 
+**Note**: the actual autosave instance (which is stored using jQuery's [.data()](http://api.jquery.com/data/) function) is only attached to **form elements**, even if those element weren't passed in directly.
+
 ## Options
 
-Options is a set of key/value pairs that can be passed into the plugin as the first argument upon initialization. All options are optional.
+Options is a set of key/value pairs that can be passed into the plugin as the first argument upon initialization.
 
 * **namespace** _String_ - Default: "autosave"  
-  The namespace to append to the event names and class names used within the plugin.
+  The namespace to append after event names and before class names that are used within the plugin.
 * **save** _Object_  
   Contains a set of key/value pairs that define callback methods for the autosave process described above.
   * **trigger** _String, Object, Array, function_ - Default: "change"  
     The callback method(s) that will start the saving process. The built-in callback method "change" willbe used by default.
-  * **scope** _String, Object, Array, function_ - Default: "changed"  
+  * **scope** _String, Object, Array, function, Boolean_ - Default: false  
     The callback method(s) that will determine the scope of form fields to gather data from. The built-in callback method "changed" will be used by default.
-  * **data** _String, Object, Array, function_ - Default: "serializeArray"  
-    The callback method(s) that will determine how to build the dataset from the form fields.
-  * **condition** _String, Object, Array, function_ - Default: undefined  
+  * **data** _String, Object, Array, function, Boolean_ - Default: false  
+    The callback method(s) that will determine how to build the dataset from the form fields. jQuery's [.serializeArray()](http://api.jquery.com/serializeArray/) function is used by default.
+  * **condition** _String, Object, Array, function, Boolean_ - Default: false  
     The callback method(s) that will determine whether or not save based on the current state of the plugin. No conditions need to pass in order to save, by default.
   * **method** _String, Object, Array, function_ - Default: "ajax"  
     The callback method(s) that will determine how the form field data will be saved. The built-in callback method "ajax" will be used by default.
 * **events** _Object_  
-  Contains a set of key/value pairs that allow you to change the name of events used within the plugin.
+  Contains a set of key/value pairs that allow you to change the name of events used within the plugin. Keep in mind that these events will be namespaced on initialization like: "eventName.namespace"
   * **save** _String_ - Default: "save"  
     This event will attempt to save anytime it is fired. It is bound to each form passed into the plugin on initialization.
+* **classes** _Object_  
+  Contains a set of key/value pairs that allow yout o chang the name of classes used within the plugin. Keep in mind that these classes will be namespaced on initialization like: "namespace-className"
+  * **changed** _String_ - Default: "changed"  
+    The class name that will be applied to elements whose value has been changed but not yet saved.
+  * **ignore** _String_ - Default: "ignore"  
+    Fields with this class name will be ignored by the plugin when gathering data.
 
 ## Callback Methods
 
@@ -108,14 +116,14 @@ Scope methods should **return a jQuery object** containing the filtered fields.
 
 ### save.data
 
-    data(options, $fields);
+    data(options, $fields, data);
 
 #### Methods
 
 The built-in callback methods for generating data from the form fields.
 
-* **serializeArray**  
-  Encodes a set of form elements as an array of names and values using jQuery's [.serializeArray()](http://api.jquery.com/serializeArray/) function.
+* **serializeObject**  
+  Encodes a set of form elements as an object of names and values using Ben Alman's [.serializeObject()](http://benalman.com/projects/jquery-misc-plugins/#serializeobject) function.
 
 #### Arguments
 
@@ -125,6 +133,8 @@ These are the arguments that are passed to scoping callback methods.
   An object of key/value pairs that may be used to configure the callback method.
 * **$fields** _jQuery_  
   A jQuery object containing the current scope of form fields.
+* **data** _String, Object, Array_  
+  Any data that has already been created from the form fields.
 
 #### Return Value
 
@@ -208,7 +218,7 @@ Here are just a few ways you can use this plugin.
 
 1. **trigger** An autosave is triggered any time a form field value changes.
 2. **scope** The scope is narrowed to include only the field whose value has changed.
-3. **data** Data is gathered using jQuery's [.serialize()](http://api.jquery.com/serialize/) function.
+3. **data** Data is gathered using jQuery's [.serializeArray()](http://api.jquery.com/serializeArray/) function.
 4. **condition** There are no conditions that need to pass to complete this save.
 5. **method** The data is posted to the current browser URL using the [jQuery.ajax](http://api.jquery.com/jQuery.ajax/) function.
 
