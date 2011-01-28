@@ -23,7 +23,7 @@ Options is a set of key/value pairs that can be passed into the plugin as the fi
 * **save** _Object_  
   Contains a set of key/value pairs that define callback methods for the autosave process described above.
   * **trigger** _String, Object, Array, function_ - Default: "change"  
-    The callback method(s) that will start the saving process. The built-in callback method "change" willbe used by default.
+    The callback method(s) that will start the saving process. The built-in callback method "change" will be used by default.
   * **scope** _String, Object, Array, function, Boolean_ - Default: false  
     The callback method(s) that will determine the scope of form fields to gather data from. The built-in callback method "changed" will be used by default.
   * **data** _String, Object, Array, function, Boolean_ - Default: false  
@@ -73,7 +73,7 @@ The built-in callback methods for triggering an autosave.
 * **change**  
   Attempts to save any time a form field value changes.
 * **event**  
-  Attaches an arbitrary event to all of the forms autosave is attached to and attempts to save any time that event is fired.
+  Attemps to save any time an event occurs on some element.
 * **interval**  
   Creates an interval loop that will attempt to save periodically.
 
