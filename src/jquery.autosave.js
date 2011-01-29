@@ -1,9 +1,8 @@
 /**
  * @fileOverview jQuery.autosave
- * Unobtrusively saves form data based on certain conditions
  *
- * @author Mads Erik Forberg, Raymond Julin, Kyle Florence
- * @website https://github.com/nervetattoo/jquery-autosave
+ * @author Kyle Florence
+ * @website https://github.com/kflorence/jquery-autosave
  * @version 1.0.0b
  *
  * Dual licensed under the MIT and BSD Licenses.
