@@ -263,11 +263,12 @@ Verified to work correctly on:
 
 ## Credits
 
-Written by [Kyle Florence](https://github.com/kflorence/). Inspired by the jQuery.autosave plugin written by
-[Raymond Julin](https://github.com/nervetattoo/), Mads Erik Forberg and Simen Graaten.
+Written by [Kyle Florence](https://github.com/kflorence/).  
+Inspired by the jQuery.autosave plugin written by [Raymond Julin](https://github.com/nervetattoo/), Mads Erik Forberg and Simen Graaten.
 
 ## License
 
-Copyright (C) 2011 Kyle Florence, Raymond Julin, Mads Erik Forberg and Simen Graaten.
+Copyright (C) 2011  
+Kyle Florence, Raymond Julin, Mads Erik Forberg and Simen Graaten.  
 The jQuery.autosave is dual licensed under the MIT and BSD licenses.
 
