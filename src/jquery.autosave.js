@@ -5,9 +5,11 @@
  * @website https://github.com/kflorence/jquery-autosave
  * @version 1.0.0b
  *
+ * Inspired by the jQuery.autosave plugin written by Raymond Julin,
+ * Mads Erik Forberg and Simen Graaten.
+ *
  * Dual licensed under the MIT and BSD Licenses.
  */
-
 ;(function($, undefined) {
   /**
    * Fixes binding the "change" event to checkboxes and select[type=multiple]
