@@ -1,24 +1,58 @@
-module("triggers");
+module("Triggers");
 
-test("Default behavior", function() {
-  expect(4);
+test("Change", function() {
+  expect(1);
 
-  var $form = $("#testForm1").autosave();
-  var form = $form.data("autosave");
-
-  // Data should look like this by default
-  var data = "text=test&textarea=&select=";
-
-  $form.ajaxComplete(function(event, xhr, options) {
-    ok(true, "Default autosave method 'ajax' is invoked successfully");
-    equal(options.data, data, "Form field 'text' has value 'test', the rest are blank");
-    equal(options.type, "POST", "Default ajax type is POST");
-    equal(options.url, window.location.href, "Default ajax URL is current browser URL");
-
-    start();
+  var $form = $("#testForm1").autosave({
+    save: {
+      trigger: "change",
+      condition: function() {
+        ok(true, "Trigger 'change' fired successfully");
+        return false;
+      }
+    }
   });
-
-  stop();
 
   $form.find(":input[type=text]").val("test").change();
 });
+
+test("Event", function() {
+  expect(1);
+
+  var $form = $("#testForm1").autosave({
+    save: {
+      trigger: "event",
+      condition: function() {
+        ok(true, "Trigger 'event' fired successfully");
+
+        return false;
+      }
+    }
+  });
+
+  $form.find(":input[name=save]").click();
+});
+
+asyncTest("Interval", function() {
+  expect(1);
+
+  var $form = $("#testForm1").autosave({
+    save: {
+      trigger: {
+        method: "interval",
+        options: {
+          interval: 10
+        }
+      },
+      condition: function(options, $fields, formData, caller) {
+        equal(caller, this.timer, "Trigger 'interval' fired successfully");
+
+        this.stopInterval();
+        start();
+
+        return false;
+      }
+    }
+  });
+});
+

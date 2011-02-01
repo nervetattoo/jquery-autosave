@@ -1,4 +1,4 @@
-module("core");
+module("Core");
 
 test("Requirements", function() {
   expect(2);
@@ -8,46 +8,56 @@ test("Requirements", function() {
 });
 
 test("Constructor", function() {
-  expect(18);
+  expect(19);
 
   var $test1 = $("#testForm1").autosave();
-  var test1 = $test1.data("autosave");
+  var instance1 = $test1.data("autosave");
 
-  equal(typeof test1, "object", "test1 contains an autosave instance");
-  equal(test1.$forms.length, 1, "test1 includes one form element");
-  equal(test1.$fields.length, 11, "test1 includes eleven form input elements");
+  equal(typeof instance1, "object", "$test1 contains an autosave instance");
+  equal(instance1.$forms.length, 1, "$test1 includes one form element");
+  equal(instance1.$fields.length, 12, "$test1 includes twelve form input elements");
 
-  var test1events = test1.$fields.data("events");
+  var events = instance1.$fields.data("events");
 
-  ok(test1events.change || test1events.propertychange, "test1 is listening for changes to form fields");
+  ok(events.change || events.propertychange, "instance1 is listening for changes to form fields");
 
-  $.each(test1.options.save, function(name, value) {
-    equal($.isArray(value), true, "test1 callbacks." + name + " is an array");
+  $.each(instance1.options.save, function(name, value) {
+    equal($.isArray(value), true, "instance1 callbacks." + name + " is an array");
 
     $.each(value, function(i, callback) {
-      equal(typeof callback, "object", "test1 callbacks." + name + "[" + i + "] is an object");
-      equal($.isFunction(callback.method), true, "test1 callbacks." + name + "[" + i + "].method is a function");
+      equal(typeof callback, "object", "instance1 callbacks." + name + "[" + i + "] is an object");
+      equal($.isFunction(callback.method), true, "instance1 allbacks." + name + "[" + i + "].method is a function");
     });
   });
 
-  var $test2 = $("#testForm1").autosave();
-  var test2 = $test2.data("autosave");
+  var $test2 = $("#testForm1").autosave({
+    save: {
+      trigger: ["event", "change"]
+    }
+  });
 
-  equal(typeof test2, "object", "test2 contains an autosave instance");
-  deepEqual(test2, test1, "test2 refers to the same autosave instance as test1");
+  var instance2 = $test2.data("autosave");
+console.log(instance2.options.save);
+  equal(instance2.options.save.trigger.length, 2, "instance2 contains 2 trigger callback methods");
 
-  var $test3 = $("#testForm1 :input").autosave();
-  var test3 = $test3.data("autosave");
+  var $test3 = $("#testForm1").autosave();
+  var instance3 = $test3.data("autosave");
 
-  notDeepEqual(test3, test2, "test3 does not refer to the same autosave instance as test2");
+  equal(typeof instance3, "object", "instance3 contains an autosave instance");
+  deepEqual(instance3, instance1, "instance3 refers to the same autosave instance as instance1");
 
-  var $test4 = $("#invalidElement1").autosave();
-  var test4 = $test4.data("autosave");
+  var $test4 = $("#testForm1 :input").autosave();
+  var instance4 = $test4.data("autosave");
 
-  equal(test4, undefined, "test4 does not contain an autosave instance");
+  notDeepEqual(instance4, instance3, "instance4 does not refer to the same autosave instance as instance3");
 
-  var $test5 = $("#invalidElement2").autosave();
-  var test5 = $test5.data("autosave");
+  var $test5 = $("#invalidElement1").autosave();
+  var instance5 = $test5.data("autosave");
 
-  equal(test5, undefined, "test5 does not contain an autosave instance");
+  equal(instance5, undefined, "instance5 does not exist");
+
+  var $test6 = $("#invalidElement2").autosave();
+  var instance6 = $test6.data("autosave");
+
+  equal(instance6, undefined, "instance6 does not exist");
 });

@@ -4,12 +4,15 @@
   <head>
     <title>jQuery.autosave Unit Tests</title>
     <link rel="stylesheet" type="text/css" href="qunit/qunit.css" />
-    <script type="text/javascript" src="http://code.jquery.com/jquery-1.4.4.min.js"></script>
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.3.min.js"></script>
     <script type="text/javascript" src="../src/jquery.autosave.js"></script>
 
     <script type="text/javascript" src="qunit/qunit.js"></script>
     <script type="text/javascript" src="unit/core.js"></script>
     <script type="text/javascript" src="unit/triggers.js"></script>
+    <script type="text/javascript" src="unit/scope.js"></script>
+    <script type="text/javascript" src="unit/data.js"></script>
+    <script type="text/javascript" src="unit/condition.js"></script>
 
     <script type="text/javascript">
       jQuery(function() {
@@ -40,8 +43,8 @@
         <form name="testForm1" id="testForm1">
           <p>I am valid. I am a form that contains inputs.</p>
 
-          <!-- hidden input (ignored) -->
-          <input name="hidden" type="hidden" class="autosave-ignore" />
+          <!-- hidden input -->
+          <input name="hidden" type="hidden" />
 
           <!-- text field -->
           <input name="text" type="text" value="" />
@@ -74,6 +77,9 @@
             <option value="2">2</option>
             <option value="3">3</option>
           </select>
+
+          <!-- save button -->
+          <button type="button" name="save" class="autosave-save autosave-ignore">Save</button>
         </form>
       </div>
     </div>
