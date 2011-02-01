@@ -41,108 +41,6 @@
   };
 
   /**
-   * Returns the forms and form fields associated with the given elements.
-   *
-   * @param {jQuery|Element|Element[]} elements
-   *    The elements to extract forms and form fields from. Can be of type
-   *    jQuery, a DOM element, or an Array of DOM elements.
-   *
-   * @return {jQuery}
-   *    A jQuery object containing the forms and/or form fields associated
-   *    with the given elements.
-   */
-  var getFormsAndFields = function(elements) {
-    var $elements = $(elements);
-
-    return $elements.filter(function() {
-      return (this.elements || this.form);
-    });
-  };
-
-  /**
-    * Returns the form fields associated with the given elements.
-    *
-    * @param {jQuery|Element|Element[]} elements
-    *    The elements to extract form fields from. Can be of type jQuery,
-    *    a DOM element, or an Array of DOM elements.
-    *
-    * @returns {jQuery}
-    *    A jQuery object containing the form fields associated with the
-    *    given elements.
-    */
-  var getFields = function(elements) {
-    var $elements = getFormsAndFields(elements);
-
-    // Extract inputs from form elements
-    return $elements.map(function() {
-      return this.elements ? $.makeArray(this.elements) : this;
-    });
-  };
-
-  /**
-    * Returns the forms associated with the given elements.
-    *
-    * @param {jQuery|Element|Element[]} elements
-    *    The elements to extract form fields from. Can be of type jQuery,
-    *    a DOM element, or an Array of DOM elements.
-    *
-    * @returns {jQuery}
-    *    A jQuery object containing the forms associated with the given
-    *    elements.
-    */
-  var getForms = function(elements) {
-    var $elements = getFormsAndFields(elements);
-
-    return $($.unique($elements.map(function() {
-      return this.elements ? this : this.form;
-    }).get()));
-  };
-
-  /**
-    * Get a callback method from a list of methods.
-    *
-    * @param {String|Object|function} method
-    *    The method to get. Can be a string or object that represents one of
-    *    the built in callback methods, or a custom function to use instead.
-    *
-    * @param {Object} methods
-    *    An object containing the list of methods to search in.
-    *
-    * @returns {Object}
-    *    The callback object. This will be an empty object if the callback
-    *    could not be found. If it was found, this object will contain at the
-    *    very least a "method" property and potentially an "options" property.
-    */
-  var getCallback = function(method, methods) {
-    var callback = {}, methodType = typeof method;
-
-    if (methodType === "function") {
-      // Custom function with no options
-      callback.method = method;
-    } else if (methodType === "string" && method in methods) {
-      // Built in method, use default options
-      callback = methods[method];
-    } else if (methodType === "object") {
-      callback = method, methodType = typeof callback.method;
-
-      if (methodType === "string" && callback.method in methods) {
-        // Built in method
-        callback = methods[callback.method];
-
-        if (typeof method.options === "object") {
-          // Merge in user supplied options with the defaults
-          callback.options = $.extend(true, {}, callback.options, method.options);
-        } else {
-          // Set options up as an empty object if none are found
-          callback.options = {};
-        }
-      }
-    }
-
-    return callback;
-  };
-
-  /**
    * Attaches an autosave class instance to the form elements associated with
    * the elements passed into the plugin.
    *
@@ -153,13 +51,10 @@
    *    The elements that invoked this function.
    */
   $.fn.autosave = function(options) {
-    var $forms = getForms(this), instance = $.extend({}, $.autosave);
-
-    // Attach instance to forms
-    $forms.data("autosave", instance);
+    var instance = $.extend({}, $.autosave);
 
     // Initialize this instance
-    instance.initialize($forms, options);
+    instance.initialize(this, options);
 
     // Don't break the chain
     return this;
@@ -257,20 +152,26 @@
     /**
      * Initializes the plugin.
      *
-     * @param {jQuery} $forms
-     *    The forms this plugin instance is attached to.
+     * @param {jQuery} $original
+     *    The original elements passed to the plugin.
      *
      * @param {Object} options
      *    The form fields found in the forms this plugin is attached to.
      */
-    initialize: function($forms, options) {
-      var self = this, $fields = getFields($forms);
+    initialize: function($elements, options) {
+      var self = this;
 
-      $.extend(this, {
-        $forms: $forms,
-        $fields: $fields,
-        options: $.extend(true, {}, this.options, options)
-      });
+      // Store the selector used when invoking the plugin
+      this.selector = $elements.selector;
+
+      // Merge options
+      this.options = $.extend(true, {}, this.options, options);
+
+      // Set the forms and form fields associated with the plugin
+      this.update();
+
+      // If we have no forms or inputs to work on, return
+      if (!this.$elements.length) return;
 
       // Add namespace to events
       $.each(this.options.events, function(name, eventName) {
@@ -285,14 +186,14 @@
       });
 
       // Bind to each form field and listen for changes
-      $fields.each(function() {
+      this.$fields.each(function() {
         bind("change", this, function(e) {
           $(this).addClass(self.options.classes.changed);
         });
       });
 
       // Bind the "save" event to each form
-      $forms.bind(this.options.events.save, function(e) {
+      this.$forms.bind(this.options.events.save, function(e) {
         self.save(this, e.type);
       });
 
@@ -305,7 +206,7 @@
           if (!$.isArray(value)) value = [value];
 
           $.each(value, function(i, callback) {
-            callback = getCallback(callback, self.callbacks[key]);
+            callback = self.getCallback(callback, self.callbacks[key]);
 
             // If callback has a valid method, we can use it
             if ($.isFunction(callback.method)) validCallbacks.push(callback);
@@ -319,6 +220,132 @@
       $.each(this.options.save.trigger, function(i, trigger) {
         trigger.method.call(self, trigger.options);
       });
+    },
+
+    /**
+     * Returns the forms and form fields associated with the given elements.
+     *
+     * @param {jQuery|Element|Element[]} elements
+     *    The elements to extract forms and form fields from.
+     *
+     * @return {jQuery}
+     *    A jQuery object containing the forms and/or form fields associated
+     *    with the given elements.
+     */
+    getFormsAndFields: function(elements) {
+      return $(elements).filter(function() {
+        return (this.elements || this.form);
+      });
+    },
+
+    /**
+     * Returns the forms associated with the given elements.
+     *
+     * @param {jQuery|Element|Element[]} [elements]
+     *    The elements to extract form fields from. Uses the default forms and
+     *    fields detected on initialization by default.
+     *
+     * @returns {jQuery}
+     *    A jQuery object containing the forms associated with the given
+     *    elements.
+     */
+    getForms: function(elements) {
+      return $($.unique($(elements || this.$elements).map(function() {
+        return this.elements ? this : this.form;
+      }).get()));
+    },
+
+    /**
+     * Returns the form fields from the given elements.
+     *
+     * @param {jQuery|Element|Element[]} elements
+     *    The elements to extract form fields from. Uses the default forms and
+     *    fields detected on initialization by default.
+     *
+     * @returns {jQuery}
+     *    A jQuery object containing the form fields associated with the
+     *    given elements.
+     */
+    getFields: function(elements) {
+      return $(elements || this.$elements).map(function() {
+        return this.elements ? $.makeArray(this.elements) : this;
+      });
+    },
+
+    /**
+     * Returns all of the valid form fields from the given elements.
+     *
+     * @param {jQuery|Element|Element[]} [fields]
+     *    The fieldss to extract valid form fields from. Uses the default
+     *    fields detected on initialization by default.
+     *
+     * @returns {jQuery}
+     *    A jQuery object containing the fields.
+     */
+    getValidFields: function(fields) {
+      var self = this;
+
+      return $(fields || this.$fields).filter(function() {
+        return !$(this).hasClass(self.options.classes.ignore);
+      });
+    },
+
+    /**
+     * Get all of the fields whose value has changed since the last save.
+     *
+     * @param {jQuery|Element|Element[]} [fields]
+     *    The fields to extract changed fields from. Uses the default fields
+     *    detected on initialization by default.
+     *
+     * @returns {jQuery}
+     *    A jQuery object containing the fields.
+     */
+    getChangedFields: function(fields) {
+      return $(fields || this.$fields).filter("." + this.options.classes.changed);
+    },
+
+    /**
+      * Get a callback method from a list of methods.
+      *
+      * @param {String|Object|function} method
+      *    The method to get. Can be a string or object that represents one of
+      *    the built in callback methods, or a custom function to use instead.
+      *
+      * @param {Object} methods
+      *    An object containing the list of methods to search in.
+      *
+      * @returns {Object}
+      *    The callback object. This will be an empty object if the callback
+      *    could not be found. If it was found, this object will contain at the
+      *    very least a "method" property and potentially an "options" property.
+      */
+    getCallback: function(method, methods) {
+      var callback = {}, methodType = typeof method;
+
+      if (methodType === "function") {
+        // Custom function with no options
+        callback.method = method;
+      } else if (methodType === "string" && method in methods) {
+        // Built in method, use default options
+        callback = methods[method];
+      } else if (methodType === "object") {
+        callback = method, methodType = typeof callback.method;
+
+        if (methodType === "string" && callback.method in methods) {
+          // Built in method
+          callback = methods[callback.method];
+
+          if (typeof method.options === "object") {
+            // Merge in user supplied options with the defaults
+            callback.options = $.extend(true, {}, callback.options, method.options);
+          } else {
+            // Set options up as an empty object if none are found
+            callback.options = {};
+          }
+        }
+      }
+
+      return callback;
     },
 
     /**
@@ -353,6 +380,27 @@
     },
 
     /**
+     * Updates the forms and fields used by this instance based on the
+     * original selector that was passed into the plugin.
+     */
+    update: function() {
+      // Remove autosave instance from old elements, if any exist
+      if (this.$elements && this.$elements.length) {
+        this.$elements.removeData("autosave");
+      }
+
+      // Update the forms and form fields associated with the selector
+      this.$elements = this.getFormsAndFields(this.selector);
+
+      // Attach an instance to those elements
+      this.$elements.data("autosave", this);
+
+      // Store all of the found forms and fields
+      this.$forms = this.getForms(this.$elements);
+      this.$fields = this.getFields(this.$elements);
+    },
+
+    /**
      * Attemps to save form field data.
      *
      * @param {jQuery|Element|Element[]} [fields]
@@ -366,18 +414,21 @@
      *    timer called this function.
      */
     save: function(fields, caller) {
-      var self = this, saved = false,
-        $fields = fields ? getFields(fields) : this.$fields;
+      var self = this, saved = false;
+
+      // Make sure we have the latest information
+      this.update();
+
+      // Use all fields by default
+      fields = fields || this.$fields;
 
       // If there are no save methods defined, we can't save
       if (this.options.save.method.length) {
+        var $fields = this.getValidFields(fields);
+
+        // Continue filtering the scope of fields
         $.each(this.options.save.scope, function(i, scope) {
           $fields = scope.method.call(self, scope.options, $fields);
-        });
-
-        // Get rid of ignored fields
-        $fields = $fields.filter(function() {
-          return !$(this).hasClass(self.options.classes.ignore);
         });
 
         if ($fields.length) {
@@ -511,8 +562,8 @@
        * since the last autosave.
        */
       changed: {
-        method: function(options, $fields) {
-          return $fields.filter("." + this.options.classes.changed);
+        method: function() {
+          return this.getChangedFields();
         }
       }
     },
