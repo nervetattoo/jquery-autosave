@@ -8,7 +8,11 @@
   <script language="javascript" type="text/javascript" src="../src/jquery.autosave.js"></script>
   <script language="javascript" type="text/javascript">
     jQuery(function($) {
-      $("form").autosave();
+      $("form").autosave({
+        save: {
+          trigger: ["change", "event"]
+        }
+      });
     });
   </script>
   </head>
@@ -66,5 +70,7 @@
     <form name="example2" id="example2">
       <input name="text2" type="text" value="" />
     </form>
+
+    <button type="button" name="save" class="autosave-save">Save</button>
   </body>
 </html>
