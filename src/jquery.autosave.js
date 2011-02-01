@@ -11,6 +11,80 @@
  * Dual licensed under the MIT and BSD Licenses.
  */
 ;(function($, undefined) {
+  var extend = $.extend;
+
+  /**
+   * Fixes jQuery.extend bugs for jQuery versions less than 1.4
+   * This particular version is from jQuery core 1.4.4
+   *
+   * TODO: try to narrow this down
+   */
+  if (!$.isPlainObject) {
+    var class2type = {}, hasOwn = Object.prototype.hasOwnProperty;
+    $.each("Boolean Number String Function Array Date RegExp Object".split(" "), function(i, name) {
+      class2type["[object " + name + "]"] = name.toLowerCase();
+    });
+
+    var type = function(obj) {
+        return obj == null ?
+          String(obj) : class2type[toString.call(obj)] || "object";
+      }, isWindow = function(obj) {
+        return obj && typeof obj === "object" && "setInterval" in obj;
+      }, isArray = Array.isArray || function(obj) {
+        return type(obj) === "array";
+      }, isPlainObject = function(obj) {
+        if (!obj || type(obj) !== "object" || obj.nodeType || isWindow(obj)) {
+          return false;
+        }
+        if (obj.constructor &&
+          !hasOwn.call(obj, "constructor") &&
+          !hasOwn.call(obj.constructor.prototype, "isPrototypeOf")) {
+          return false;
+        }
+        var key;
+        for (key in obj) {}
+        return key === undefined || hasOwn.call(obj, key);
+      };
+
+    extend = function() {
+      var options, name, src, copy, copyIsArray, clone, target = arguments[0]
+        || {}, i = 1, length = arguments.length, deep = false;
+
+      if (typeof target === "boolean") {
+        deep = target; target = arguments[1] || {}; i = 2;
+      }
+
+      if (typeof target !== "object" && !jQuery.isFunction(target)) {
+        target = {};
+      }
+
+      if (length === i) {
+        target = this; --i;
+      }
+
+      for (; i < length; i++) {
+        if ((options = arguments[i]) != null) {
+          for (name in options) {
+            src = target[name]; copy = options[name];
+            if (target === copy) continue;
+            if (deep && copy && (isPlainObject(copy)
+              || (copyIsArray = isArray(copy)))) {
+              if (copyIsArray) {
+                copyIsArray = false;
+                clone = src && isArray(src) ? src : [];
+              } else {
+                clone = src && isPlainObject(src) ? src : {};
+              }
+              target[name] = extend(deep, clone, copy);
+            } else if (copy !== undefined) target[name] = copy;
+          }
+        }
+      }
+
+      return target;
+    };
+  }
+
   /**
    * Fixes binding the "change" event to checkboxes and select[type=multiple]
    * for Internet Explorer. See: https://gist.github.com/770449
@@ -51,7 +125,7 @@
    *    The elements that invoked this function.
    */
   $.fn.autosave = function(options) {
-    var instance = $.extend({}, $.autosave);
+    var instance = extend({}, $.autosave);
 
     // Initialize this instance
     instance.initialize(this, options);
@@ -72,10 +146,6 @@
      * This jQuery object will hold our save method queue.
      */
     $queue: $({}),
-    /**
-     * Holds the callback methods used by the plugin.
-     */
-    callbacks: {},
     /**
      * Default plugin options.
      */
@@ -165,7 +235,7 @@
       this.selector = $elements.selector;
 
       // Merge options
-      this.options = $.extend(true, {}, this.options, options);
+      this.options = extend(true, {}, this.options, options);
 
       // Set the forms and form fields associated with the plugin
       this.update();
@@ -337,7 +407,7 @@
 
           if (typeof method.options === "object") {
             // Merge in user supplied options with the defaults
-            callback.options = $.extend(true, {}, callback.options, method.options);
+            callback.options = extend(true, {}, callback.options, method.options);
           } else {
             // Set options up as an empty object if none are found
             callback.options = {};
@@ -499,89 +569,99 @@
   };
 
   /**
-   * Holds all of the built-in callback methods.
+   * Callback repository
    */
-  $.extend($.autosave.callbacks, {
-    trigger: {
-      /**
-       * Attempt to save any time a form field value changes.
-       */
-      change: {
-        method: function(options) {
-          var self = this,
-            $fields = options.filter ? this.$fields.filter(options.filter)
-              : this.$fields;
+  var callbacks = $.autosave.callbacks = {};
+  $.each($.autosave.options.save, function(key) {
+    callbacks[key] = {};
+  });
 
-          $fields.each(function() {
-            bind("change", this, function(e, field) {
-              self.save(field, e.type);
+  /**
+   * Add built-in save trigger callbacks
+   */
+  extend(callbacks.trigger, {
+    /**
+     * Attempt to save any time a form field value changes.
+     */
+    change: {
+      method: function(options) {
+        var self = this,
+          $fields = options.filter ? this.$fields.filter(options.filter)
+            : this.$fields;
+
+        $fields.each(function() {
+          bind("change", this, function(e, field) {
+            self.save(field, e.type);
+          });
+        });
+      },
+      options: {
+        filter: false
+      }
+    },
+    /**
+      * Attempt to save any time an event occurs on some element.
+      */
+    event: {
+      method: function(options) {
+        var self = this, $element = $(options.element);
+
+        if (typeof options.eventType === "string") {
+          $element.each(function() {
+            bind(options.eventType, this, function(e) {
+              self.save(false, e.type);
             });
           });
-        },
-        options: {
-          filter: false
         }
       },
-      /**
-       * Attempt to save any time an event occurs on some element.
-       */
-      event: {
-        method: function(options) {
-          var self = this, $element = $(options.element);
+      options: {
+        element: ".autosave-save",
+        eventType: "click"
+      }
+    },
+    /**
+      * Creates an interval loop that will attempt to save periodically.
+      */
+    interval: {
+      method: function(options) {
+        if (!isNaN(parseInt(options.interval))) {
+          this.startInterval(this.interval = options.interval);
+        }
+      },
+      options: {
+        interval: 30000
+      }
+    }
+  });
 
-          if (typeof options.eventType === "string") {
-            $element.each(function() {
-              bind(options.eventType, this, function(e) {
-                self.save(false, e.type);
-              });
-            });
-          }
-        },
-        options: {
-          element: ".autosave-save",
-          eventType: "click"
-        }
-      },
-      /**
-       * Creates an interval loop that will attempt to save periodically.
-       */
-      interval: {
-        method: function(options) {
-          if (!isNaN(parseInt(options.interval))) {
-            this.startInterval(this.interval = options.interval);
-          }
-        },
-        options: {
-          interval: 30000
-        }
+  extend(callbacks.scope, {
+    /**
+     * Changes the scope of fields to only those whose value has changed
+     * since the last autosave.
+     */
+    changed: {
+      method: function() {
+        return this.getChangedFields();
       }
-    },
-    scope: {
-      /**
-       * Changes the scope of fields to only those whose value has changed
-       * since the last autosave.
-       */
-      changed: {
-        method: function() {
-          return this.getChangedFields();
-        }
-      }
-    },
-    data: {
-      /**
-       * Whereas .serializeArray() serializes a form into an array,
-       * .serializeObject() serializes a form into an object.
-       *
-       * jQuery serializeObject - v0.2 - 1/20/2010
-       * http://benalman.com/projects/jquery-misc-plugins/
-       *
-       * Copyright (c) 2010 "Cowboy" Ben Alman
-       * Dual licensed under the MIT and GPL licenses.
-       * http://benalman.com/about/license/
-       *
-       * @return Object The resulting object of form values.
-       */
-      serializeObject: function(options, $fields) {
+    }
+  });
+
+  extend(callbacks.data, {
+    /**
+     * Whereas .serializeArray() serializes a form into an array,
+     * .serializeObject() serializes a form into an object.
+     *
+     * jQuery serializeObject - v0.2 - 1/20/2010
+     * http://benalman.com/projects/jquery-misc-plugins/
+     *
+     * Copyright (c) 2010 "Cowboy" Ben Alman
+     * Dual licensed under the MIT and GPL licenses.
+     * http://benalman.com/about/license/
+     *
+     * @return Object The resulting object of form values.
+     */
+    serializeObject: {
+      method: function(options, $fields) {
         var obj = {};
 
         $.each($fields.serializeArray(), function(i, o) {
@@ -594,53 +674,55 @@
 
         return obj;
       }
-    },
-    condition: {
-      /**
-       * Only save if the interval called the save method
-       */
-      interval: {
-        method: function(options, $fields, data, caller) {
-          return (!this.timer || this.timer === caller);
-        }
-      },
-      /**
-       * Only save if at least one of the field values has changed
-       */
-      changed: {
-        method: function(options, $fields) {
-          return $fields.filter("." + this.options.classes.changed).length > 0;
-        }
+    }
+  });
+
+  extend(callbacks.condition, {
+    /**
+     * Only save if the interval called the save method
+     */
+    interval: {
+      method: function(options, $fields, data, caller) {
+        return (!this.timer || this.timer === caller);
       }
     },
-    method: {
-      /**
-       * Saves form field data using a jQuery.ajax call. Any options that can
-       * be passed to the jQuery.ajax method are valid here.
-       */
-      ajax: {
-        method: function(options, data) {
-          var self = this;
+    /**
+     * Only save if at least one of the field values has changed
+     */
+    changed: {
+      method: function() {
+        return this.getChangedFields().length > 0;
+      }
+    }
+  });
 
-          $.ajax($.extend(true, { data: data }, options, {
-            complete: function(xhr, status) {
-              if ($.isFunction(options.complete)) {
-                // Call user-provided complete function first
-                options.complete.apply(self, arguments);
-              }
+  extend(callbacks.method, {
+    /**
+     * Saves form field data using a jQuery.ajax call. Any options that can
+     * be passed to the jQuery.ajax method are valid here.
+     */
+    ajax: {
+      method: function(options, data) {
+        var self = this;
 
-              // We are done now, cleanup
-              self.complete();
+        $.ajax($.extend(true, { data: data }, options, {
+          complete: function(xhr, status) {
+            if ($.isFunction(options.complete)) {
+              // Call user-provided complete function first
+              options.complete.apply(self, arguments);
             }
-          }));
 
-          // Don't call this.complete() yet
-          return false;
-        },
-        options: {
-          url: window.location.href,
-          type: "POST"
-        }
+            // We are done now, cleanup
+            self.complete();
+          }
+        }));
+
+        // Don't call this.complete() yet
+        return false;
+      },
+      options: {
+        url: window.location.href,
+        type: "POST"
       }
     }
   });
