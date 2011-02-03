@@ -14,14 +14,15 @@ test("Constructor", function() {
   var instance1 = $test1.data("autosave");
 
   equal(typeof instance1, "object", "$test1 contains an autosave instance");
-  equal(instance1.$forms.length, 1, "$test1 includes one form element");
-  equal(instance1.$fields.length, 12, "$test1 includes twelve form input elements");
+  equal(instance1.forms().length, 1, "$test1 includes one form element");
+  equal(instance1.inputs().length, 12, "$test1 includes twelve form input elements");
 
-  var events = instance1.$fields.data("events");
+  var events = instance1.inputs().data("events");
 
-  ok(events.change || events.propertychange, "instance1 is listening for changes to form fields");
+  ok(events.change || events.propertychange, "instance1 is listening for changes to inputs");
 
-  $.each(instance1.options.save, function(name, value) {
+  // "trigger" "scope" "data" "conditions" "save"
+  $.each(instance1.options.callbacks, function(name, value) {
     equal($.isArray(value), true, "instance1 callbacks." + name + " is an array");
 
     $.each(value, function(i, callback) {
@@ -31,14 +32,14 @@ test("Constructor", function() {
   });
 
   var $test2 = $("#testForm1").autosave({
-    save: {
-      trigger: ["event", "change"]
+    callbacks: {
+      trigger: ["change", "interval"]
     }
   });
 
   var instance2 = $test2.data("autosave");
-console.log(instance2.options.save);
-  equal(instance2.options.save.trigger.length, 2, "instance2 contains 2 trigger callback methods");
+//console.log(instance2.options.callbacks);
+  equal(instance2.options.callbacks.trigger.length, 2, "instance2 contains multiple trigger callbacks");
 
   var $test3 = $("#testForm1").autosave();
   var instance3 = $test3.data("autosave");
