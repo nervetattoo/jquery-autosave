@@ -27,19 +27,19 @@ test("Constructor", function() {
 
     $.each(value, function(i, callback) {
       equal(typeof callback, "object", "instance1 callbacks." + name + "[" + i + "] is an object");
-      equal($.isFunction(callback.method), true, "instance1 allbacks." + name + "[" + i + "].method is a function");
+      equal($.isFunction(callback.method), true, "instance1 callbacks." + name + "[" + i + "].method is a function");
     });
   });
 
   var $test2 = $("#testForm1").autosave({
     callbacks: {
-      trigger: ["change", "interval"]
+      scope: ["all", "changed"]
     }
   });
 
   var instance2 = $test2.data("autosave");
-//console.log(instance2.options.callbacks);
-  equal(instance2.options.callbacks.trigger.length, 2, "instance2 contains multiple trigger callbacks");
+
+  equal(instance2.options.callbacks.scope.length, 2, "instance2 contains multiple scope callbacks");
 
   var $test3 = $("#testForm1").autosave();
   var instance3 = $test3.data("autosave");
