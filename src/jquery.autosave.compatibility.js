@@ -16,18 +16,18 @@
  */
 ;(function($, window, undefined) {
   // Used to test for jQuery < 1.4
-  if (!jQuery.isPlainObject) {
+  if (!$.isPlainObject) {
     var class2type = {},
       toString = Object.prototype.toString,
       hasOwn = Object.prototype.hasOwnProperty;
 
     // Populate the class2type map
-    jQuery.each("Boolean Number String Function Array Date RegExp Object".split(" "), function(i, name) {
+    $.each("Boolean Number String Function Array Date RegExp Object".split(" "), function(i, name) {
       class2type[ "[object " + name + "]" ] = name.toLowerCase();
     });
 
     // Add in missing functions: these were pulled straight from jQuery 1.5
-    jQuery.extend({
+    $.extend({
       type: function( obj ) {
         return obj == null ?
           String( obj ) :
@@ -37,10 +37,10 @@
       // Since version 1.3, DOM methods and functions like alert
       // aren't supported. They return false on IE (#2968).
       isFunction: function( obj ) {
-        return jQuery.type(obj) === "function";
+        return $.type(obj) === "function";
       },
       isArray: Array.isArray || function( obj ) {
-        return jQuery.type(obj) === "array";
+        return $.type(obj) === "array";
       },
       // A crude way of determining if an object is a window
       isWindow: function( obj ) {
@@ -50,7 +50,7 @@
         // Must be an Object.
         // Because of IE, we also have to check the presence of the constructor property.
         // Make sure that DOM nodes and window objects don't pass through, as well
-        if ( !obj || jQuery.type(obj) !== "object" || obj.nodeType || jQuery.isWindow( obj ) ) {
+        if ( !obj || $.type(obj) !== "object" || obj.nodeType || $.isWindow( obj ) ) {
           return false;
         }
 
@@ -86,7 +86,7 @@
         }
 
         // Handle case when target is a string or something (possible in deep copy)
-        if ( typeof target !== "object" && !jQuery.isFunction(target) ) {
+        if ( typeof target !== "object" && !$.isFunction(target) ) {
           target = {};
         }
 
@@ -110,18 +110,18 @@
               }
 
               // Recurse if we're merging plain objects or arrays
-              if ( deep && copy && ( jQuery.isPlainObject(copy)
-                    || (copyIsArray = jQuery.isArray(copy)) ) ) {
+              if ( deep && copy && ( $.isPlainObject(copy)
+                    || (copyIsArray = $.isArray(copy)) ) ) {
                 if ( copyIsArray ) {
                   copyIsArray = false;
-                  clone = src && jQuery.isArray(src) ? src : [];
+                  clone = src && $.isArray(src) ? src : [];
 
                 } else {
-                  clone = src && jQuery.isPlainObject(src) ? src : {};
+                  clone = src && $.isPlainObject(src) ? src : {};
                 }
 
                 // Never move original objects, clone them
-                target[ name ] = jQuery.extend( deep, clone, copy );
+                target[ name ] = $.extend( deep, clone, copy );
 
               // Don't bring in undefined values
               } else if ( copy !== undefined ) {
