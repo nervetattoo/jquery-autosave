@@ -238,21 +238,52 @@ Saving methods do not require a return value. However, **if your callback method
 
     event(event[, ...]);
 
-Any custom events that have been defined in the plugin are listed below.
+For convenience, the plugin automatically binds or fires events on certain elements under certain circumstances. These events are listed below. Some of these events need to be triggered using jQuery's [.triggerHandler()](http://api.jquery.com/triggerHandler/) function on the element the event is bound to. Other events will be fired automatically and may be caught and handled using jQuery's [.bind()](http://api.jquery.com/bind/) function on the element firing the event. The jQuery [Event Object](http://api.jquery.com/category/events/event-object/) will **always** be the first argument passed to handler methods.
 
-### events.save
+### Save
 
-When triggered, this event will attempt to save input data for a specific form. You can trigger this event using jQuery's [.triggerHandler()](http://api.jquery.com/triggerHandler/) function on any form autosave is bound to.
+When triggered, this event will attempt to save form data.
+
+#### Elements
+
+This event is bound to each form autosave is attached to.
+
+#### Arguments
+
+* **$inputs** _jQuery|Element|Element[]_  
+  The inputs to save. All inputs will be used by default.
 
 ---
 
-### events.saved
+### Saved
 
-This event is triggered on each form whenever autosave finishes saving form data. It can be bound to using jQuery's [.bind()](http://api.jquery.com/bind/) function if you need to be notified after saving is completed.
+Triggered whenever autosave finishes saving form data.
 
-### events.changed
+#### Elements
 
-This event is triggered whenever an input value changes on the form containing that input. There is a second argument passed to the handler containing the input that triggered the event.
+This event is fired for each form autosave is attached to.
+
+#### Arguments
+
+* **event** _Object_  
+  The jQuery.Event object.
+
+---
+
+### Changed
+
+Triggered whenever an input value changes.
+
+#### Elements
+
+This event is fired on the form containing the input.
+
+#### Arguments
+
+* **event** _Object_  
+  The jQuery.Event object.
+* **input** _Element_  
+  The DOM element that triggered the event.
 
 ## Requirements
 
@@ -261,7 +292,7 @@ jQuery.autosave requires:
 * jQuery version 1.4.0+ (recommended)
 * jQuery version 1.2.3+ with the compatibility plugin (see note below)
 
-**Note**: There are several bugs in the [jQuery.extend](http://api.jquery.com/jQuery.extend/) function that will cause unexpected behavior in jQuery versions 1.3.2 and below. To make autosave fully compatible with jQuery versions 1.2.3 through 1.3.2, you should include the **jquery.autosave.compatibility.js** file _after_ including the jQuery.autosave plugin. This will add additional functionality to jQuery core and fix the extend method for you. Please be advised that **the compatibility patch should only be used as a last resort.** If at all possible, please upgrade to jQuery version 1.4 or higher.
+**Note**: There are several bugs in the [jQuery.extend](http://api.jquery.com/jQuery.extend/) function that will cause unexpected behavior in jQuery versions 1.3.2 and below. To make autosave fully compatible with jQuery versions 1.2.3 through 1.3.2, you should include the **jquery.extend-patch.js** file _before_ initializing the plugin. This will add additional functionality to jQuery core and fix the extend method for you. Please be advised that **the compatibility patch should only be used as a last resort.** If at all possible, please upgrade to jQuery version 1.4 or higher.
 
 ## Compatibility
 
