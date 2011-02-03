@@ -14,7 +14,7 @@
  *
  * Dual licensed under the MIT and BSD Licenses.
  */
-;(function(window, undefined) {
+;(function($, window, undefined) {
   // Used to test for jQuery < 1.4
   if (!jQuery.isPlainObject) {
     var class2type = {},
@@ -136,4 +136,4 @@
       }
     });
   }
-})(window);
+})(jQuery, window);

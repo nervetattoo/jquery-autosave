@@ -162,6 +162,11 @@
          * after saving is completed.
          */
         saved: "saved",
+        /**
+         * This event is triggered whenever an input value changes on the form
+         * containing that input. It can be bound to if you need to be notified
+         * when an input value changes.
+         */
         changed: "changed"
       },
       /**
