@@ -3,7 +3,7 @@
  *
  * @author Kyle Florence
  * @website https://github.com/kflorence/jquery-autosave
- * @version 1.0.3b
+ * @version 1.0.0
  *
  * Inspired by the jQuery.autosave plugin written by Raymond Julin,
  * Mads Erik Forberg and Simen Graaten.
@@ -243,8 +243,8 @@
         });
 
         // Attempt to save when "save" is triggered on a form
-        _bind($forms, this.options.events.save, function(e) {
-          self.save(this, e.type);
+        _bind($forms, this.options.events.save, function(e, inputs) {
+          self.save(inputs, e.type);
         });
 
         // Listen for changes on all inputs

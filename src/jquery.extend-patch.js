@@ -10,7 +10,7 @@
  *
  * @author Kyle Florence
  * @website https://github.com/kflorence/jquery-autosave
- * @version 1.0.3b
+ * @version 1.0.0
  *
  * Dual licensed under the MIT and BSD Licenses.
  */
