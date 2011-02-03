@@ -3,7 +3,7 @@
  *
  * @author Kyle Florence
  * @website https://github.com/kflorence/jquery-autosave
- * @version 1.0.2b
+ * @version 1.0.3b
  *
  * Inspired by the jQuery.autosave plugin written by Raymond Julin,
  * Mads Erik Forberg and Simen Graaten.
@@ -613,7 +613,7 @@
               options.complete.apply(self, arguments);
             }
 
-            self.next("saveMethod");
+            self.next("save");
           }
         }));
 
