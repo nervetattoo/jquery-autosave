@@ -27,7 +27,8 @@ This plugin works strictly with forms and form inputs of any type. Any other ele
       },
       events: {
         save: "save",
-        saved: "saved"
+        saved: "saved",
+        changed: "changed"
       },
       classes: {
         changed: "changed",
@@ -57,6 +58,8 @@ Options is a set of key/value pairs that can be passed into the plugin as the fi
     This event will attempt to save anytime it is fired. It is bound to each form passed into the plugin on initialization.
   * **saved** _String_  
     This event is triggered on each form whenever autosave finishes saving form data. It can be bound to if you need to be notified after saving is completed.
+  * **changed** _String_  
+    This event is triggered whenever an input value changes on the form containing that input. It can be bound to if you need to be notified whenever an input value changes.
 * **classes** _Object_  
   Contains a set of key/value pairs that allow yout o chang the name of classes used within the plugin. Keep in mind that these classes will be namespaced on initialization like: "namespace-className"
   * **changed** _String_  
@@ -246,6 +249,10 @@ When triggered, this event will attempt to save input data for a specific form. 
 ### events.saved
 
 This event is triggered on each form whenever autosave finishes saving form data. It can be bound to using jQuery's [.bind()](http://api.jquery.com/bind/) function if you need to be notified after saving is completed.
+
+### events.changed
+
+This event is triggered whenever an input value changes on the form containing that input. There is a second argument passed to the handler containing the input that triggered the event.
 
 ## Requirements
 
