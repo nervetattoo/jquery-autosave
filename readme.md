@@ -242,6 +242,8 @@ For convenience, the plugin automatically binds or fires events on certain eleme
 
 ### Save
 
+    save(event, $inputs);
+
 When triggered, this event will attempt to save form data.
 
 #### Elements
@@ -257,6 +259,8 @@ This event is bound to each form autosave is attached to.
 
 ### Saved
 
+    saved(event);
+
 Triggered whenever autosave finishes saving form data.
 
 #### Elements
@@ -271,6 +275,8 @@ This event is fired for each form autosave is attached to.
 ---
 
 ### Changed
+
+    changed(event, input);
 
 Triggered whenever an input value changes.
 
@@ -290,9 +296,9 @@ This event is fired on the form containing the input.
 jQuery.autosave requires:
 
 * jQuery version 1.4.0+ (recommended)
-* jQuery version 1.2.3+ with the compatibility plugin (see note below)
+* jQuery version 1.2.3+ (see note below)
 
-**Note**: There are several bugs in the [jQuery.extend](http://api.jquery.com/jQuery.extend/) function that will cause unexpected behavior in jQuery versions 1.3.2 and below. To make autosave fully compatible with jQuery versions 1.2.3 through 1.3.2, you should include the **jquery.extend-patch.js** file _before_ initializing the plugin. This will add additional functionality to jQuery core and fix the extend method for you. Please be advised that **the compatibility patch should only be used as a last resort.** If at all possible, please upgrade to jQuery version 1.4 or higher.
+**Note**: There are several bugs in the [jQuery.extend](http://api.jquery.com/jQuery.extend/) function that will cause unexpected behavior in jQuery versions 1.3.2 and below. To make autosave fully compatible with jQuery versions 1.2.3 through 1.3.2, you should include the [jquery.extend-patch.js](https://github.com/kflorence/misc-js/blob/master/jquery/patches/jquery.extend-patch.js) file _before_ initializing the plugin. This file will add additional functionality to jQuery core and fix the extend method for you. Please be advised that this patch should only be used as a last resort. **If at all possible, please upgrade to jQuery version 1.4 or higher.**
 
 ## Compatibility
 
