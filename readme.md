@@ -317,5 +317,5 @@ Inspired by the jQuery.autosave plugin written by [Raymond Julin](https://github
 
 Copyright (C) 2011  
 Kyle Florence, Raymond Julin, Mads Erik Forberg and Simen Graaten.  
-The jQuery.autosave is dual licensed under the MIT and BSD licenses.
+jQuery.autosave is dual licensed under the BSD and MIT licenses.
 
