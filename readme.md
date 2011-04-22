@@ -39,7 +39,7 @@ This plugin works strictly with forms and form inputs of any type. Any other ele
 Options is a set of key/value pairs that can be passed into the plugin as the first argument upon initialization. The default values are shown above.
 
 * **namespace** _String_  
-  The namespace to append after event names and before class names that are used within the plugin.
+  The namespace to append after event names and before class names that are used within the plugin. This will also be the key name for the autosave instance stored in each element's expando data.
 * **callbacks** _Object_  
   Contains a set of key/value pairs that define callback methods for the autosave process described above.
   * **trigger** _String, Object, Array, function_  
@@ -238,7 +238,7 @@ Saving methods do not require a return value. However, **if your callback method
 
     event(event[, ...]);
 
-For convenience, the plugin automatically binds or fires events on certain elements under certain circumstances. These events are listed below. Some of these events need to be triggered using jQuery's [.triggerHandler()](http://api.jquery.com/triggerHandler/) function on the element the event is bound to. Other events will be fired automatically and may be caught and handled using jQuery's [.bind()](http://api.jquery.com/bind/) function on the element firing the event. The jQuery [Event Object](http://api.jquery.com/category/events/event-object/) will **always** be the first argument passed to handler methods.
+For convenience, the plugin automatically binds or fires events on certain elements under certain circumstances. These events are listed below. Some of these events need to be triggered using jQuery's [.triggerHandler()](http://api.jquery.com/triggerHandler/) function on the element the event is bound to. Other events will be fired automatically and may be caught and handled using jQuery's [.bind()](http://api.jquery.com/bind/) function on the element firing the event. The jQuery [Event Object](http://api.jquery.com/category/events/event-object/) will **always** be the first argument passed to handler methods. Also, keep in mind that these events will be [namespaced](http://docs.jquery.com/Namespaced_Events) according to the _namespace_ option above ("autosave" by default).
 
 ### Save
 
