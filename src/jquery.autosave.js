@@ -3,14 +3,14 @@
  *
  * @author Kyle Florence
  * @website https://github.com/kflorence/jquery-autosave
- * @version 1.0.0
+ * @version 1.0.20110421
  *
  * Inspired by the jQuery.autosave plugin written by Raymond Julin,
  * Mads Erik Forberg and Simen Graaten.
  *
  * Dual licensed under the MIT and BSD Licenses.
  */
-;(function($, undefined) {
+;(function($, window, document, undefined) {
   /**
    * Fixes binding the "change" event to checkboxes and select[type=multiple]
    * for Internet Explorer. See: https://gist.github.com/770449
@@ -116,7 +116,8 @@
     options: {
       /**
        * The namespace to append after event names and before class names that
-       * are used within the plugin.
+       * are used within the plugin. This will also be the key name for the
+       * autosave instance stored in the element's expando data.
        */
       namespace: "autosave",
       /**
@@ -148,7 +149,7 @@
       /**
       * Contains a set of key/value pairs that allow you to change the name of
       * events used within the plugin. Keep in mind that these events will be
-      * namespaced on initialization like: "eventName.autosave"
+      * namespaced on initialization like: "eventName.namespace"
       */
       events: {
         /**
@@ -172,7 +173,7 @@
       /**
        * Contains a set of key/value pairs that allow you to change the name of
        * classes used within the plugin. Keep in mind that these classes will be
-       * namespaced on initialization like: "autosave-className"
+       * namespaced on initialization like: "namespace-className"
        */
       classes: {
         /**
@@ -214,7 +215,7 @@
         var validCallbacks, $forms = this.forms(), $inputs = this.inputs();
 
         // Only attach to forms
-        $forms.data("autosave", this);
+        $forms.data(this.options.namespace, this);
 
         $.each(this.options.events, function(name, eventName) {
           self.options.events[name]
@@ -622,7 +623,7 @@
           }
         }));
 
-        // Don't call this.complete() yet
+        // Asynchronous
         return false;
       },
       options: {
@@ -645,4 +646,4 @@
   $.fn.autosave = function(options) {
     return $.extend({}, $.autosave).initialize(this, options);
   };
-})(jQuery);
+})(jQuery, window, document);
