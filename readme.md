@@ -39,7 +39,7 @@ This plugin works strictly with forms and form inputs of any type. Any other ele
 Options is a set of key/value pairs that can be passed into the plugin as the first argument upon initialization. The default values are shown above.
 
 * **namespace** _String_  
-  The namespace to append after event names and before class names that are used within the plugin.
+  The namespace to append after event names and before class names that are used within the plugin. This will also be the key name for the autosave instance stored in each element's expando data.
 * **callbacks** _Object_  
   Contains a set of key/value pairs that define callback methods for the autosave process described above.
   * **trigger** _String, Object, Array, function_  
@@ -238,9 +238,11 @@ Saving methods do not require a return value. However, **if your callback method
 
     event(event[, ...]);
 
-For convenience, the plugin automatically binds or fires events on certain elements under certain circumstances. These events are listed below. Some of these events need to be triggered using jQuery's [.triggerHandler()](http://api.jquery.com/triggerHandler/) function on the element the event is bound to. Other events will be fired automatically and may be caught and handled using jQuery's [.bind()](http://api.jquery.com/bind/) function on the element firing the event. The jQuery [Event Object](http://api.jquery.com/category/events/event-object/) will **always** be the first argument passed to handler methods.
+For convenience, the plugin automatically binds or fires events on certain elements under certain circumstances. These events are listed below. Some of these events need to be triggered using jQuery's [.triggerHandler()](http://api.jquery.com/triggerHandler/) function on the element the event is bound to. Other events will be fired automatically and may be caught and handled using jQuery's [.bind()](http://api.jquery.com/bind/) function on the element firing the event. The jQuery [Event Object](http://api.jquery.com/category/events/event-object/) will **always** be the first argument passed to handler methods. Also, keep in mind that these events will be [namespaced](http://docs.jquery.com/Namespaced_Events) according to the _namespace_ option above ("autosave" by default).
 
 ### Save
+
+    save(event, $inputs);
 
 When triggered, this event will attempt to save form data.
 
@@ -257,6 +259,8 @@ This event is bound to each form autosave is attached to.
 
 ### Saved
 
+    saved(event);
+
 Triggered whenever autosave finishes saving form data.
 
 #### Elements
@@ -271,6 +275,8 @@ This event is fired for each form autosave is attached to.
 ---
 
 ### Changed
+
+    changed(event, input);
 
 Triggered whenever an input value changes.
 
@@ -290,9 +296,9 @@ This event is fired on the form containing the input.
 jQuery.autosave requires:
 
 * jQuery version 1.4.0+ (recommended)
-* jQuery version 1.2.3+ with the compatibility plugin (see note below)
+* jQuery version 1.2.3+ (see note below)
 
-**Note**: There are several bugs in the [jQuery.extend](http://api.jquery.com/jQuery.extend/) function that will cause unexpected behavior in jQuery versions 1.3.2 and below. To make autosave fully compatible with jQuery versions 1.2.3 through 1.3.2, you should include the **jquery.extend-patch.js** file _before_ initializing the plugin. This will add additional functionality to jQuery core and fix the extend method for you. Please be advised that **the compatibility patch should only be used as a last resort.** If at all possible, please upgrade to jQuery version 1.4 or higher.
+**Note**: There are several bugs in the [jQuery.extend](http://api.jquery.com/jQuery.extend/) function that will cause unexpected behavior in jQuery versions 1.3.2 and below. To make autosave fully compatible with jQuery versions 1.2.3 through 1.3.2, you should include the [jquery.extend-patch.js](https://github.com/kflorence/misc-js/blob/master/jquery/patches/jquery.extend-patch.js) file _before_ initializing the plugin. This file will add additional functionality to jQuery core and fix the extend method for you. Please be advised that this patch should only be used as a last resort. **If at all possible, please upgrade to jQuery version 1.4 or higher.**
 
 ## Compatibility
 
@@ -311,5 +317,5 @@ Inspired by the jQuery.autosave plugin written by [Raymond Julin](https://github
 
 Copyright (C) 2011  
 Kyle Florence, Raymond Julin, Mads Erik Forberg and Simen Graaten.  
-The jQuery.autosave is dual licensed under the MIT and BSD licenses.
+jQuery.autosave is dual licensed under the BSD and MIT licenses.
 
