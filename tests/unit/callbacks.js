@@ -85,12 +85,32 @@ test("Scope/Changed", function() {
  * Data callbacks
  */
 
+test("Data/Serialize (Default)", function() {
+  expect(1);
+
+  var $form = $("#testForm1").autosave({
+    callbacks: {
+      scope: "changed",
+      condition: function(options, $fields, formData) {
+        var data = "text=test";
+
+        deepEqual(formData, data, "SerializeArray data matches correctly");
+
+        return false;
+      }
+    }
+  });
+
+  $form.find(":input[type=text]").val("test").change();
+});
+
 test("Data/SerializeArray", function() {
   expect(1);
 
   var $form = $("#testForm1").autosave({
     callbacks: {
       scope: "changed",
+      data: "serializeArray",
       condition: function(options, $fields, formData) {
         var data = [{ name: "text", value: "test" }];
 
@@ -148,23 +168,106 @@ test("Condition/Changed", function() {
  * Save callbacks
  */
 
-asyncTest("Save/AJAX", function() {
-  expect(1);
+asyncTest("Save/AJAX/Serialize", function() {
+  expect(2);
 
-  var $form = $("#testForm1").autosave({
+  var num = 0;
+
+  $("#testForm1").autosave({
     callbacks: {
       save: {
         method: "ajax",
         options: {
+          data: function() {
+            return "number=" + ++num;
+          },
+          beforeSend: function(xhr, settings) {
+            equals( settings.data, "text=test&number=1", "Data merged successfully" );
+          },
           complete: function() {
-            ok(true, "AJAX save completed successfully");
+            ok(done = true, "AJAX save completed successfully");
             start();
           }
         }
       }
     }
-  });
-
-  $form.find(":input[type=text]").val("test").change();
+  }).find(":input[type=text]").val("test").change();
 });
 
+asyncTest("Save/AJAX/SerializeArray", function() {
+  expect(2);
+
+  var num = 0;
+
+  $("#testForm1").autosave({
+    callbacks: {
+      data: "serializeArray",
+      save: {
+        method: "ajax",
+        options: {
+          data: function() {
+            return [{ name: "number", value: ++num }];
+          },
+          beforeSend: function(xhr, settings) {
+            equals( settings.data, "text=test&number=1", "Data merged successfully" );
+          },
+          complete: function(xhr, status) {
+            ok(done = true, "AJAX save completed successfully");
+            start();
+          }
+        }
+      }
+    }
+  }).find(":input[type=text]").val("test").change();
+});
+
+asyncTest("Save/AJAX/SerializeObject", function() {
+  expect(2);
+
+  var num = 0;
+
+  $("#testForm1").autosave({
+    callbacks: {
+      data: "serializeObject",
+      save: {
+        method: "ajax",
+        options: {
+          data: function() {
+            return { number: ++num };
+          },
+          beforeSend: function(xhr, settings) {
+            equals( settings.data, "text=test&number=1", "Data merged successfully" );
+          },
+          complete: function(xhr, status) {
+            ok(done = true, "AJAX save completed successfully");
+            start();
+          }
+        }
+      }
+    }
+  }).find(":input[type=text]").val("test").change();
+});
+
+asyncTest("Save/AJAX Mismatched data types", function() {
+  expect(1);
+
+  var num = 0;
+
+  try {
+    $("#testForm1").autosave({
+      callbacks: {
+        save: {
+          method: "ajax",
+          options: {
+            data: function() {
+              return []; // should be string
+            }
+          }
+        }
+      }
+    }).find(":input[type=text]").val("test").change();
+  } catch( e ) {
+    ok(true, "Exception thrown: " + e);
+    start();
+  }
+});

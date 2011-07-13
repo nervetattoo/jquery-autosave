@@ -8,7 +8,7 @@ test("Requirements", function() {
 });
 
 test("Constructor", function() {
-  expect(19);
+  expect(21);
 
   var $test1 = $("#testForm1").autosave();
   var instance1 = $test1.data("autosave");
