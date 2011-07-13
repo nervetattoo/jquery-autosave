@@ -10,17 +10,6 @@
     <script type="text/javascript" src="qunit/qunit.js"></script>
     <script type="text/javascript" src="unit/core.js"></script>
     <script type="text/javascript" src="unit/callbacks.js"></script>
-
-    <script type="text/javascript">
-      jQuery(function() {
-        // Log to console
-        QUnit.log = function(test) {
-          if (typeof console !== "undefined" && console.log) {
-          console.log(test.message + ":", test.result);
-          }
-        }
-      });
-    </script>
   </head>
   <body>
     <h1 id="qunit-header">jQuery.autosave Unit Tests</h1>

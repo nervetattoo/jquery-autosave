@@ -3,7 +3,7 @@
  *
  * @author Kyle Florence
  * @website https://github.com/kflorence/jquery-autosave
- * @version 1.0.20110421
+ * @version 1.0.20110713
  *
  * Inspired by the jQuery.autosave plugin written by Raymond Julin,
  * Mads Erik Forberg and Simen Graaten.
@@ -99,6 +99,22 @@
   };
 
   /**
+   * Private implementation of jQuery.type for backwards compatibility.
+   * See: http://api.jquery.com/jQuery.type
+   */
+  var _type = $.type || (function() {
+    var class2type = {}, toString = Object.prototype.toString;
+
+    $.each("Boolean Number String Function Array Date RegExp Object".split(" "), function(i, name) {
+      class2type["[object " + name + "]"] = name.toLowerCase();
+    });
+
+    return function(obj) {
+      return obj == null ? String(obj) : class2type[toString.call(obj)] || "object";
+    }
+  })();
+
+  /**
    * @class The jQuery.autosave class.
    */
   $.autosave = {
@@ -136,7 +152,7 @@
         /**
          * Determines how to extract and store the form input values.
          */
-        data: null,
+        data: "serialize",
         /**
          * Determines whether or not to autosave based on certain conditions.
          */
@@ -411,7 +427,7 @@
         });
 
         if ($inputs.length) {
-          var passes = true, formData = $inputs.serializeArray();
+          var formData, passes = true;
 
           // Manipulate form data
           $.each(this.options.callbacks.data, function(i, data) {
@@ -556,6 +572,28 @@
 
   $.extend(callbacks.data, {
     /**
+     * See: http://api.jquery.com/serialize/
+     *
+     * @returns {String}
+     *    Standard URL-encoded string of form values.
+     */
+    serialize: {
+      method: function(options, $inputs) {
+        return $inputs.serialize();
+      }
+    },
+    /**
+     * See: http://api.jquery.com/serializeArray/
+     *
+     * @returns {Array}
+     *     An array of objects containing name/value pairs.
+     */
+    serializeArray: {
+      method: function(options, $inputs) {
+        return $inputs.serializeArray();
+      }
+    },
+    /**
      * Whereas .serializeArray() serializes a form into an array,
      * .serializeObject() serializes a form into an object.
      *
@@ -566,7 +604,8 @@
      * Dual licensed under the MIT and GPL licenses.
      * http://benalman.com/about/license/
      *
-     * @return Object The resulting object of form values.
+     * @returns {Object}
+     *    The resulting object of form values.
      */
     serializeObject: {
       method: function(options, $inputs) {
@@ -609,19 +648,39 @@
      * Saves form data using a jQuery.ajax call.
      */
     ajax: {
-      method: function(options, data) {
-        var self = this;
+      method: function(options, formData) {
+        var self = this, o = $.extend({}, options);
 
-        $.ajax($.extend(true, { data: data }, options, {
-          complete: function(xhr, status) {
-            if ($.isFunction(options.complete)) {
-              // Call user-provided complete function first
-              options.complete.apply(self, arguments);
-            }
+        // Allow for dynamically generated data
+        if ($.isFunction(o.data)) {
+          o.data = o.data.call(self, formData);
+        }
 
-            self.next("save");
+        // Wrap the complete method with our own
+        o.complete = function(xhr, status) {
+          if ($.isFunction(options.complete)) {
+            options.complete.apply(self, arguments);
           }
-        }));
+
+          self.next("save");
+        };
+
+        var formDataType = _type(formData), optionsDataType = _type(o.data);
+
+        // Data types must match in order to merge
+        if ( formDataType !== optionsDataType ) {
+          throw "Type mismatch: cannot merge form data with options data!";
+        } else if ( formDataType === "array" ) {
+          o.data = $.merge(formData, o.data);
+        } else if ( formDataType === "object" ) {
+          o.data = $.extend(formData, o.data);
+        } else if ( formDataType === "string" ) {
+          o.data = formData + (formData.length ? "&" : "") + o.data;
+        } else {
+          o.data = formData;
+        }
+
+        $.ajax(o);
 
         // Asynchronous
         return false;
