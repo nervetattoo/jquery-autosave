@@ -21,7 +21,7 @@ This plugin works strictly with forms and form inputs of any type. Any other ele
       callbacks: {
         trigger: "change",
         scope: null,
-        data: null,
+        data: "serialize",
         condition: null,
         save: "ajax"
       },
@@ -75,7 +75,7 @@ If you use this plugin as is (without providing any options), this is what you c
 
 1. **trigger** An autosave is triggered any time an input value changes.
 2. **scope** The scope of inputs is narrowed to include only those whose value has changed since the last autosave.
-3. **data** Data is gathered using jQuery's [.serializeArray()](http://api.jquery.com/serializeArray/) function.
+3. **data** Data is gathered using jQuery's [.serialize()](http://api.jquery.com/serialize/) function.
 4. **condition** There are no conditions that need to pass to complete this save.
 5. **save** The data is posted to the current browser URL using the [jQuery.ajax()](http://api.jquery.com/jQuery.ajax/) function.
 
@@ -226,7 +226,7 @@ The built-in callback methods for determining how to save the input data.
 These are the arguments that are passed to saving callback methods.
 
 * **options** _Object_  
-  An object of key/value pairs that may be used to configure the callback method.
+  An object of key/value pairs that may be used to configure the callback method. Everything supported by the [jQuery.ajax()](http://api.jquery.com/jQuery.ajax/) function is supported here. Additionally, you may pass a function to the `options.data` parameter to allow your callback method to take dynamically generated data (new data will be gathered upon every save attempt).
 * **data** _Object_  
   The data gathered from the inputs.
 
