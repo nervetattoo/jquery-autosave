@@ -3,7 +3,7 @@
  *
  * @author Kyle Florence
  * @website https://github.com/kflorence/jquery-autosave
- * @version 1.1.1.20110721
+ * @version 1.1.2.20110722
  *
  * Inspired by the jQuery.autosave plugin written by Raymond Julin,
  * Mads Erik Forberg and Simen Graaten.
@@ -74,24 +74,17 @@
       cb.method = callback;
     } else if (callbackType === "string" && callback in callbacks) {
       // Built in method, use default options
-      cb = callbacks[callback];
+      cb.method = callbacks[callback].method;
     } else if (callbackType === "object") {
       callbackType = typeof callback.method;
 
       if (callbackType === "function") {
         // Custom function
-        cb = callback;
+        cb.method = callback.method;
       } else if (callbackType === "string" && callback.method in callbacks) {
-        // Build in method
-        cb = callbacks[callback.method];
-      }
-
-      if (typeof cb.options === "object") {
-        // Merge in user supplied options with the defaults
-        cb.options = $.extend(true, {}, cb.options, callback.options);
-      } else {
-        // Set options up as an empty object if none are found
-        cb.options = {};
+        // Built in method
+        cb.method = callbacks[callback.method].method;
+        cb.options = $.extend(true, {}, callbacks[callback.method].options, callback.options);
       }
     }
 
@@ -114,93 +107,25 @@
     }
   })();
 
-  /**
-   * @class The jQuery.autosave class.
-   */
   $.autosave = {
-    /**
-     * The ID of the currently running timer, or undefined if there isn't one.
-     */
     timer: 0,
-    /**
-     * This jQuery object will hold our queues.
-     */
     $queues: $({}),
-    /**
-     * Default plugin options.
-     */
     options: {
-      /**
-       * The namespace to append after event names and before class names that
-       * are used within the plugin. This will also be the key name for the
-       * autosave instance stored in the element's expando data.
-       */
       namespace: "autosave",
-      /**
-       * Contains a set of key/value pairs that allow you to specify which
-       * callbacks should be used at the different stages of the save process.
-       */
       callbacks: {
-        /**
-         * Determines what will start the saving process.
-         */
         trigger: "change",
-        /**
-         * Determines the scope of inputs involved in the save.
-         */
         scope: null,
-        /**
-         * Determines how to extract and store the form input values.
-         */
         data: "serialize",
-        /**
-         * Determines whether or not to autosave based on certain conditions.
-         */
         condition: null,
-        /**
-         * Determines how the form data will be saved.
-         */
         save: "ajax"
       },
-      /**
-      * Contains a set of key/value pairs that allow you to change the name of
-      * events used within the plugin. Keep in mind that these events will be
-      * namespaced on initialization like: "eventName.namespace"
-      */
       events: {
-        /**
-         * This event is attached to each form autosave is attached to. When
-         * triggered, it will attempt to save the form.
-         */
         save: "save",
-        /**
-         * This event is triggered on each form whenever autosave finishes
-         * saving form data. It can be bound to if you need to be notified
-         * after saving is completed.
-         */
         saved: "saved",
-        /**
-         * This event is triggered whenever an input value changes on the form
-         * containing that input. It can be bound to if you need to be notified
-         * when an input value changes.
-         */
         changed: "changed"
       },
-      /**
-       * Contains a set of key/value pairs that allow you to change the name of
-       * classes used within the plugin. Keep in mind that these classes will be
-       * namespaced on initialization like: "namespace-className"
-       */
       classes: {
-        /**
-         * The class name that will be applied to elements whose value has been
-         * changed but not yet saved.
-         */
         changed: "changed",
-        /**
-         * Inputs with this class name will be ignored by the plugin when
-         * gathering data.
-         */
         ignore: "ignore"
       }
     },
@@ -252,7 +177,9 @@
               callback = _findCallback(callback, self.callbacks[key]);
 
               // If callback has a valid method, we can use it
-              if ($.isFunction(callback.method)) validCallbacks.push(callback);
+              if ($.isFunction(callback.method)) {
+                validCallbacks.push(callback);
+                }
             });
           }
 
@@ -277,7 +204,6 @@
 
       }
 
-      // Maintain the chain
       return $elements;
     },
 
@@ -383,10 +309,10 @@
 
         interval = interval || this.interval;
 
-        // If there is a timer running, stop it
-        if (this.timer) this.stopInterval();
+        if (this.timer) {
+          this.stopInterval();
+        }
 
-        // Make sure we have a valid interval
         if (!isNaN(parseInt(interval))) {
           this.timer = setTimeout(function() {
             self.save(false, self.timer);
@@ -510,14 +436,13 @@
         }
 
         // If there is a timer running, start the next interval
-        if (this.timer) this.startInterval();
+        if (this.timer) {
+          this.startInterval();
+        }
       }
     }
   };
 
-  /**
-   * Callback repository
-   */
   var callbacks = $.autosave.callbacks = {};
   $.each($.autosave.options.callbacks, function(key) {
     callbacks[key] = {};
@@ -651,29 +576,6 @@
       method: function(options, formData) {
         var self = this, o = $.extend({}, options);
 
-        // Allow for dynamically generated data
-        if ($.isFunction(o.data)) {
-          o.data = o.data.call(self, formData);
-
-          var formDataType = _type(formData),
-              optionsDataType = _type(o.data);
-
-          // Data types must match in order to merge
-          if (formDataType === optionsDataType) {
-            throw "Type mismatch: cannot merge form data with options data!";
-          } else if (formDataType === "array") {
-            o.data = $.merge(formData, o.data);
-          } else if (formDataType === "object") {
-            o.data = $.extend(formData, o.data);
-          } else if (formDataType === "string") {
-            o.data = formData + (formData.length ? "&" : "") + o.data;
-          }
-
-        // If no user defined data is given, use formData
-        } else if (o.data === undefined) {
-          o.data = formData;
-        }
-
         // Wrap the complete method with our own
         o.complete = function(xhr, status) {
           if ($.isFunction(options.complete)) {
@@ -683,9 +585,37 @@
           self.next("save");
         };
 
+        // Allow for dynamically generated data
+        if ($.isFunction(o.data)) {
+          o.data = o.data.call(self, formData);
+        }
+
+        var formDataType = _type(formData),
+            optionsDataType = _type(o.data);
+
+        // No options data given, use form data
+        if (optionsDataType == "undefined") {
+          o.data = formData;
+
+        // Data types must match in order to merge
+        } else if (formDataType == optionsDataType) {
+          switch(formDataType) {
+            case "array": {
+              o.data = $.merge(formData, o.data);
+            } break;
+            case "object": {
+              o.data = $.extend(formData, o.data);
+            } break;
+            case "string": {
+              o.data = formData + (formData.length ? "&" : "") + o.data;
+            } break;
+          }
+        } else {
+          throw "Cannot merge form data with options data, must be of same type.";
+        }
+
         $.ajax(o);
 
-        // Asynchronous
         return false;
       },
       options: {
@@ -708,4 +638,5 @@
   $.fn.autosave = function(options) {
     return $.extend({}, $.autosave).initialize(this, options);
   };
+
 })(jQuery, window, document);

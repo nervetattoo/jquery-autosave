@@ -268,6 +268,28 @@ asyncTest("Save/AJAX Mismatched data types", function() {
     }).find(":input[type=text]").val("test").change();
   } catch( e ) {
     ok(true, "Exception thrown: " + e);
+  } finally {
     start();
   }
+});
+
+asyncTest("Save/AJAX - No options.data", function() {
+  expect(2);
+
+  $("#testForm1").autosave({
+    callbacks: {
+      save: {
+        method: "ajax",
+        options: {
+          beforeSend: function(xhr, settings) {
+            equals( settings.data, "text=test", "Data merged successfully" );
+          },
+          complete: function(xhr, status) {
+            ok(done = true, "AJAX save completed successfully");
+            start();
+          }
+        }
+      }
+    }
+  }).find(":input[type=text]").val("test").change();
 });
