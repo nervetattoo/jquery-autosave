@@ -74,24 +74,17 @@
       cb.method = callback;
     } else if (callbackType === "string" && callback in callbacks) {
       // Built in method, use default options
-      cb = callbacks[callback];
+      cb.method = callbacks[callback].method;
     } else if (callbackType === "object") {
       callbackType = typeof callback.method;
 
       if (callbackType === "function") {
         // Custom function
-        cb = callback;
+        cb.method = callback.method;
       } else if (callbackType === "string" && callback.method in callbacks) {
-        // Build in method
-        cb = callbacks[callback.method];
-      }
-
-      if (typeof cb.options === "object") {
-        // Merge in user supplied options with the defaults
-        cb.options = $.extend(true, {}, cb.options, callback.options);
-      } else {
-        // Set options up as an empty object if none are found
-        cb.options = {};
+        // Built in method
+        cb.method = callbacks[callback.method].method;
+        cb.options = $.extend(true, {}, callbacks[callback.method].options, callback.options);
       }
     }
 
@@ -650,30 +643,7 @@
     ajax: {
       method: function(options, formData) {
         var self = this, o = $.extend({}, options);
-
-        // Allow for dynamically generated data
-        if ($.isFunction(o.data)) {
-          o.data = o.data.call(self, formData);
-
-          var formDataType = _type(formData),
-              optionsDataType = _type(o.data);
-
-          // Data types must match in order to merge
-          if (formDataType === optionsDataType) {
-            throw "Type mismatch: cannot merge form data with options data!";
-          } else if (formDataType === "array") {
-            o.data = $.merge(formData, o.data);
-          } else if (formDataType === "object") {
-            o.data = $.extend(formData, o.data);
-          } else if (formDataType === "string") {
-            o.data = formData + (formData.length ? "&" : "") + o.data;
-          }
-
-        // If no user defined data is given, use formData
-        } else if (o.data === undefined) {
-          o.data = formData;
-        }
-
+console.log( callbacks.save.ajax.options );
         // Wrap the complete method with our own
         o.complete = function(xhr, status) {
           if ($.isFunction(options.complete)) {
@@ -682,6 +652,35 @@
 
           self.next("save");
         };
+
+        // Allow for dynamically generated data
+        if ($.isFunction(o.data)) {
+          o.data = o.data.call(self, formData);
+        }
+
+        var formDataType = _type(formData),
+            optionsDataType = _type(o.data);
+
+        // No options data given, use form data
+        if (optionsDataType == "undefined") {
+          o.data = formData;
+
+        // Data types must match in order to merge
+        } else if (formDataType == optionsDataType) {
+          switch(formDataType) {
+            case "array": {
+              o.data = $.merge(formData, o.data);
+            } break;
+            case "object": {
+              o.data = $.extend(formData, o.data);
+            } break;
+            case "string": {
+              o.data = formData + (formData.length ? "&" : "") + o.data;
+            } break;
+          }
+        } else {
+          throw "Cannot merge form data with options data, must be of same type.";
+        }
 
         $.ajax(o);
 
