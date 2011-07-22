@@ -3,7 +3,7 @@
  *
  * @author Kyle Florence
  * @website https://github.com/kflorence/jquery-autosave
- * @version 1.1.1.20110721
+ * @version 1.1.2.20110722
  *
  * Inspired by the jQuery.autosave plugin written by Raymond Julin,
  * Mads Erik Forberg and Simen Graaten.
@@ -107,93 +107,25 @@
     }
   })();
 
-  /**
-   * @class The jQuery.autosave class.
-   */
   $.autosave = {
-    /**
-     * The ID of the currently running timer, or undefined if there isn't one.
-     */
     timer: 0,
-    /**
-     * This jQuery object will hold our queues.
-     */
     $queues: $({}),
-    /**
-     * Default plugin options.
-     */
     options: {
-      /**
-       * The namespace to append after event names and before class names that
-       * are used within the plugin. This will also be the key name for the
-       * autosave instance stored in the element's expando data.
-       */
       namespace: "autosave",
-      /**
-       * Contains a set of key/value pairs that allow you to specify which
-       * callbacks should be used at the different stages of the save process.
-       */
       callbacks: {
-        /**
-         * Determines what will start the saving process.
-         */
         trigger: "change",
-        /**
-         * Determines the scope of inputs involved in the save.
-         */
         scope: null,
-        /**
-         * Determines how to extract and store the form input values.
-         */
         data: "serialize",
-        /**
-         * Determines whether or not to autosave based on certain conditions.
-         */
         condition: null,
-        /**
-         * Determines how the form data will be saved.
-         */
         save: "ajax"
       },
-      /**
-      * Contains a set of key/value pairs that allow you to change the name of
-      * events used within the plugin. Keep in mind that these events will be
-      * namespaced on initialization like: "eventName.namespace"
-      */
       events: {
-        /**
-         * This event is attached to each form autosave is attached to. When
-         * triggered, it will attempt to save the form.
-         */
         save: "save",
-        /**
-         * This event is triggered on each form whenever autosave finishes
-         * saving form data. It can be bound to if you need to be notified
-         * after saving is completed.
-         */
         saved: "saved",
-        /**
-         * This event is triggered whenever an input value changes on the form
-         * containing that input. It can be bound to if you need to be notified
-         * when an input value changes.
-         */
         changed: "changed"
       },
-      /**
-       * Contains a set of key/value pairs that allow you to change the name of
-       * classes used within the plugin. Keep in mind that these classes will be
-       * namespaced on initialization like: "namespace-className"
-       */
       classes: {
-        /**
-         * The class name that will be applied to elements whose value has been
-         * changed but not yet saved.
-         */
         changed: "changed",
-        /**
-         * Inputs with this class name will be ignored by the plugin when
-         * gathering data.
-         */
         ignore: "ignore"
       }
     },
@@ -245,7 +177,9 @@
               callback = _findCallback(callback, self.callbacks[key]);
 
               // If callback has a valid method, we can use it
-              if ($.isFunction(callback.method)) validCallbacks.push(callback);
+              if ($.isFunction(callback.method)) {
+                validCallbacks.push(callback);
+                }
             });
           }
 
@@ -270,7 +204,6 @@
 
       }
 
-      // Maintain the chain
       return $elements;
     },
 
@@ -376,10 +309,10 @@
 
         interval = interval || this.interval;
 
-        // If there is a timer running, stop it
-        if (this.timer) this.stopInterval();
+        if (this.timer) {
+          this.stopInterval();
+        }
 
-        // Make sure we have a valid interval
         if (!isNaN(parseInt(interval))) {
           this.timer = setTimeout(function() {
             self.save(false, self.timer);
@@ -503,14 +436,13 @@
         }
 
         // If there is a timer running, start the next interval
-        if (this.timer) this.startInterval();
+        if (this.timer) {
+          this.startInterval();
+        }
       }
     }
   };
 
-  /**
-   * Callback repository
-   */
   var callbacks = $.autosave.callbacks = {};
   $.each($.autosave.options.callbacks, function(key) {
     callbacks[key] = {};
@@ -643,7 +575,7 @@
     ajax: {
       method: function(options, formData) {
         var self = this, o = $.extend({}, options);
-console.log( callbacks.save.ajax.options );
+
         // Wrap the complete method with our own
         o.complete = function(xhr, status) {
           if ($.isFunction(options.complete)) {
@@ -684,7 +616,6 @@ console.log( callbacks.save.ajax.options );
 
         $.ajax(o);
 
-        // Asynchronous
         return false;
       },
       options: {
@@ -707,4 +638,5 @@ console.log( callbacks.save.ajax.options );
   $.fn.autosave = function(options) {
     return $.extend({}, $.autosave).initialize(this, options);
   };
+
 })(jQuery, window, document);
