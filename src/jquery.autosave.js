@@ -3,7 +3,7 @@
  *
  * @author Kyle Florence
  * @website https://github.com/kflorence/jquery-autosave
- * @version 1.1.0.20110713
+ * @version 1.1.1.20110721
  *
  * Inspired by the jQuery.autosave plugin written by Raymond Julin,
  * Mads Erik Forberg and Simen Graaten.
@@ -654,6 +654,24 @@
         // Allow for dynamically generated data
         if ($.isFunction(o.data)) {
           o.data = o.data.call(self, formData);
+
+          var formDataType = _type(formData),
+              optionsDataType = _type(o.data);
+
+          // Data types must match in order to merge
+          if (formDataType === optionsDataType) {
+            throw "Type mismatch: cannot merge form data with options data!";
+          } else if (formDataType === "array") {
+            o.data = $.merge(formData, o.data);
+          } else if (formDataType === "object") {
+            o.data = $.extend(formData, o.data);
+          } else if (formDataType === "string") {
+            o.data = formData + (formData.length ? "&" : "") + o.data;
+          }
+
+        // If no user defined data is given, use formData
+        } else if (o.data === undefined) {
+          o.data = formData;
         }
 
         // Wrap the complete method with our own
@@ -664,21 +682,6 @@
 
           self.next("save");
         };
-
-        var formDataType = _type(formData), optionsDataType = _type(o.data);
-
-        // Data types must match in order to merge
-        if ( formDataType !== optionsDataType ) {
-          throw "Type mismatch: cannot merge form data with options data!";
-        } else if ( formDataType === "array" ) {
-          o.data = $.merge(formData, o.data);
-        } else if ( formDataType === "object" ) {
-          o.data = $.extend(formData, o.data);
-        } else if ( formDataType === "string" ) {
-          o.data = formData + (formData.length ? "&" : "") + o.data;
-        } else {
-          o.data = formData;
-        }
 
         $.ajax(o);
 

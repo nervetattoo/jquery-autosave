@@ -5,7 +5,7 @@
   <link type="text/css" rel="stylesheet" href="styles.css" />
 
   <script type="text/javascript" src="http://code.jquery.com/jquery-1.4.min.js"></script>
-  <script type="text/javascript" src="../dist/jquery.autosave.min.js"></script>
+  <script type="text/javascript" src="../src/jquery.autosave.js"></script>
 
   <script type="text/javascript">
     jQuery(function($) {
@@ -17,10 +17,16 @@
             $("[name=save]").click(function() {
               self.save();
             });
-          }]
+          }],
+          save: {
+            method: "ajax",
+            options: {
+              success: function() {
+                alert("saved!");
+              }
+            }
+          }
         }
-      }).bind("saved.autosave", function() {
-        alert("saved!");
       });
     });
   </script>
