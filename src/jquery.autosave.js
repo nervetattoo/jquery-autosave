@@ -126,11 +126,11 @@
         save: "save",
         saved: "saved",
         changed: "changed",
-		modified: "modified"
+        modified: "modified"
       },
       classes: {
         changed: "changed",
-		modified: "modified",
+        modified: "modified",
         ignore: "ignore"
       }
     },
@@ -202,11 +202,11 @@
           $(this.form).triggerHandler(self.options.events.changed, this);
         });
 
-		// Listen for modifications on all inputs
-		$inputs.bind(["keyup", this.options.namespace].join("."), function(e) {
-			$(this).addClass(self.options.classes.modified);
-			$(this.form).triggerHandler(self.options.events.modified, this);
-		});
+        // Listen for modifications on all inputs
+        $inputs.bind(["keyup", this.options.namespace].join("."), function(e) {
+            $(this).addClass(self.options.classes.modified);
+            $(this.form).triggerHandler(self.options.events.modified, this);
+        });
 
         // Set up triggers
         $.each(this.options.callbacks.trigger, function(i, trigger) {
@@ -317,13 +317,13 @@
      * @returns {jQuery}
      *    A jQuery object containing any matched input elements.
      */
-	modifiedInputs: function(inputs) {
+    modifiedInputs: function(inputs) {
       var self = this;
 
       return this.inputs(inputs).filter(function() {
         return $(this).hasClass(self.options.classes.modified);
       });
-	},
+    },
 
     /**
      * Starts an autosave interval loop, stopping the current one if needed.
@@ -490,18 +490,18 @@
       }
     },
 
-	/**
-	 * Attempt to save any time an input value is modified.
-	 */
-	modify: {
-	  method: function() {
-	    var self = this;
+    /**
+     * Attempt to save any time an input value is modified.
+     */
+    modify: {
+      method: function() {
+        var self = this;
 
-		this.forms().bind([this.options.events.modified, this.options.namespace].join("."), function(e, input) {
-			self.save(input, e.type);
-		});
-	  }
-	},
+        this.forms().bind([this.options.events.modified, this.options.namespace].join("."), function(e, input) {
+            self.save(input, e.type);
+        });
+      }
+    },
 
     /**
      * Creates an interval loop that will attempt to save periodically.
@@ -537,7 +537,7 @@
       }
     },
 
-	/**
+    /**
      * Only use the inputs with values that have been modified since the last save.
      */
     modified: {

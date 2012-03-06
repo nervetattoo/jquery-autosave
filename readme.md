@@ -29,11 +29,11 @@ This plugin works strictly with forms and form inputs of any type. Any other ele
         save: "save",
         saved: "saved",
         changed: "changed",
-		modified: "modified"
+        modified: "modified"
       },
       classes: {
         changed: "changed",
-		modified: "modified",
+        modified: "modified",
         ignore: "ignore"
       }
     }
