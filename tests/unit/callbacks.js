@@ -19,6 +19,21 @@ test("Trigger/Change", function() {
   $form.find(":input[type=text]").val("test").change();
 });
 
+test("Trigger/Modified", function() {
+  expect(1);
+
+  var $form = $("#testForm1").autosave({
+    callbacks: {
+      trigger: "modify",
+      save: function() {
+        ok(true, "Trigger 'change' fired successfully");
+      }
+    }
+  });
+
+  $form.find(":input[type=text]").val("t").keyup();
+});
+
 asyncTest("Trigger/Interval", function() {
   expect(1);
 
@@ -79,6 +94,25 @@ test("Scope/Changed", function() {
   });
 
   $form.find(":input[type=text]").val("test").change();
+});
+
+test("Scope/Modified", function() {
+  expect(2);
+
+  var $form = $("#testForm1").autosave({
+    callbacks: {
+      trigger: "modify",
+      scope: "modified",
+      condition: function(options, $inputs) {
+        equal($inputs.length, 1, "One changed input");
+        equal($inputs[0].name, "text", "Changed input's name is 'text'");
+
+        return false;
+      }
+    }
+  });
+
+  $form.find(":input[type=text]").val("t").keyup();
 });
 
 /**
@@ -162,6 +196,23 @@ test("Condition/Changed", function() {
 
   $form.find(":input[name=save]").click();
   $form.find(":input[type=text]").val("test").change();
+});
+
+test("Condition/Modified", function() {
+  expect(1);
+
+  var $form = $("#testForm1").autosave({
+    callbacks: {
+      trigger: "modify",
+      condition: "modified",
+      save: function() {
+        ok(true, "Only save if there is modified data");
+      }
+    }
+  });
+
+  $form.find(":input[name=save]").click();
+  $form.find(":input[type=text]").val("t").keyup();
 });
 
 /**
