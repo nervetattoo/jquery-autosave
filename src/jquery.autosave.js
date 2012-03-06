@@ -3,7 +3,7 @@
  *
  * @author Kyle Florence
  * @website https://github.com/kflorence/jquery-autosave
- * @version 1.1.2.20110722
+ * @version 1.1.3.20120305
  *
  * Inspired by the jQuery.autosave plugin written by Raymond Julin,
  * Mads Erik Forberg and Simen Graaten.
@@ -21,10 +21,13 @@
    * @param {String} eventType
    *    The name of the event we want to bind to.
    *
+   * @param {String} namespace
+   *    The namespace for the event, or an empty string if there isn't one.
+   *
    * @param {function} callback
    *    The function to execute when the event is triggered
    */
-  var _bind = function(elements, eventType, callback) {
+  var _bind = function(elements, eventType, namespace, callback) {
     var $elements = $(elements),
       rValidProps = /^(checked|selectedIndex)$/,
       hasPropertyChange = ("onpropertychange" in document.body);
@@ -42,7 +45,7 @@
         || this.tagName.toLowerCase() === "select" && this.multiple)
         ? "propertychange" : "change";
 
-      $(this).bind(eventType, function(e) {
+      $(this).bind([eventType, namespace].join("."), function(e) {
         if (e.type !== "propertychange"
           || rValidProps.test(window.event.propertyName)) {
           callback.call(this, e);
@@ -122,10 +125,12 @@
       events: {
         save: "save",
         saved: "saved",
-        changed: "changed"
+        changed: "changed",
+		modified: "modified"
       },
       classes: {
         changed: "changed",
+		modified: "modified",
         ignore: "ignore"
       }
     },
@@ -187,21 +192,26 @@
         });
 
         // Attempt to save when "save" is triggered on a form
-        _bind($forms, this.options.events.save, function(e, inputs) {
+        $forms.bind([this.options.events.save, this.options.namespace].join("."), function(e, inputs) {
           self.save(inputs, e.type);
         });
 
         // Listen for changes on all inputs
-        _bind($inputs, "change", function(e) {
+        _bind($inputs, "change", this.options.namespace, function(e) {
           $(this).addClass(self.options.classes.changed);
-          $(this.form).triggerHandler(self.options.events.changed, [this]);
+          $(this.form).triggerHandler(self.options.events.changed, this);
         });
+
+		// Listen for modifications on all inputs
+		$inputs.bind(["keyup", this.options.namespace].join("."), function(e) {
+			$(this).addClass(self.options.classes.modified);
+			$(this.form).triggerHandler(self.options.events.modified, this);
+		});
 
         // Set up triggers
         $.each(this.options.callbacks.trigger, function(i, trigger) {
           trigger.method.call(self, trigger.options);
         });
-
       }
 
       return $elements;
@@ -296,6 +306,24 @@
         return $(this).hasClass(self.options.classes.changed);
       });
     },
+
+    /**
+     * Get all of the inputs whose value has been modified since the last save.
+     *
+     * @param {jQuery|Element|Element[]} [inputs]
+     *    The set of inputs to search within. Uses all of the currently found
+     *    inputs by default.
+     *
+     * @returns {jQuery}
+     *    A jQuery object containing any matched input elements.
+     */
+	modifiedInputs: function(inputs) {
+      var self = this;
+
+      return this.inputs(inputs).filter(function() {
+        return $(this).hasClass(self.options.classes.modified);
+      });
+	},
 
     /**
      * Starts an autosave interval loop, stopping the current one if needed.
@@ -456,11 +484,25 @@
       method: function() {
         var self = this;
 
-        this.forms().bind(this.options.events.changed, function(e, input) {
+        this.forms().bind([this.options.events.changed, this.options.namespace].join("."), function(e, input) {
           self.save(input, e.type);
         });
       }
     },
+
+	/**
+	 * Attempt to save any time an input value is modified.
+	 */
+	modify: {
+	  method: function() {
+	    var self = this;
+
+		this.forms().bind([this.options.events.modified, this.options.namespace].join("."), function(e, input) {
+			self.save(input, e.type);
+		});
+	  }
+	},
+
     /**
      * Creates an interval loop that will attempt to save periodically.
      */
@@ -485,12 +527,22 @@
         return this.validInputs();
       }
     },
+
     /**
      * Only use the inputs with values that have changed since the last save.
      */
     changed: {
       method: function() {
         return this.changedInputs();
+      }
+    },
+
+	/**
+     * Only use the inputs with values that have been modified since the last save.
+     */
+    modified: {
+      method: function() {
+        return this.modifiedInputs();
       }
     }
   });
@@ -507,6 +559,7 @@
         return $inputs.serialize();
       }
     },
+
     /**
      * See: http://api.jquery.com/serializeArray/
      *
@@ -518,6 +571,7 @@
         return $inputs.serializeArray();
       }
     },
+
     /**
      * Whereas .serializeArray() serializes a form into an array,
      * .serializeObject() serializes a form into an object.
@@ -551,19 +605,29 @@
 
   $.extend(callbacks.condition, {
     /**
-     * Only save if the interval called the save method
+     * Only save if the interval called the save method.
      */
     interval: {
       method: function(options, $inputs, data, caller) {
         return (!this.timer || this.timer === caller);
       }
     },
+
     /**
-     * Only save if at least one of the input values has changed
+     * Only save if at least one of the input values has changed.
      */
     changed: {
       method: function() {
         return this.changedInputs().length > 0;
+      }
+    },
+
+    /**
+     * Only save if at least one of the input values has been modified.
+     */
+    modified: {
+      method: function() {
+        return this.modifiedInputs().length > 0;
       }
     }
   });

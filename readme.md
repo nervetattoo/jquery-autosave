@@ -28,10 +28,12 @@ This plugin works strictly with forms and form inputs of any type. Any other ele
       events: {
         save: "save",
         saved: "saved",
-        changed: "changed"
+        changed: "changed",
+		modified: "modified"
       },
       classes: {
         changed: "changed",
+		modified: "modified",
         ignore: "ignore"
       }
     }
@@ -59,11 +61,15 @@ Options is a set of key/value pairs that can be passed into the plugin as the fi
   * **saved** _String_  
     This event is triggered on each form whenever autosave finishes saving form data. It can be bound to if you need to be notified after saving is completed.
   * **changed** _String_  
-    This event is triggered whenever an input value changes on the form containing that input. It can be bound to if you need to be notified whenever an input value changes.
+    This event is triggered whenever an input value changes ("change" event is fired) on the form containing that input. It can be bound to if you need to be notified whenever an input value changes.
+  * **modified** _String_  
+    This event is triggered whenever an input value is modified ("keyup" event is fired) on the form containing that input. It can be bound to if you need to be notified whenever an input value is modified.
 * **classes** _Object_  
   Contains a set of key/value pairs that allow yout o chang the name of classes used within the plugin. Keep in mind that these classes will be namespaced on initialization like: "namespace-className"
   * **changed** _String_  
     The class name that will be applied to elements whose value has been changed but not yet saved.
+  * **changed** _String_  
+    The class name that will be applied to elements whose value has been modified but not yet saved.
   * **ignore** _String_  
     Inputs with this class name will be ignored by the plugin when gathering data.
 
@@ -106,6 +112,8 @@ The built-in callback methods for triggering an autosave.
 
 * **change**  
   Attempts to save any time an input value changes.
+* **modify**  
+  Attempts to save any time an input value is modified.
 * **interval**  
   Creates an interval loop that will attempt to save periodically.
 
@@ -134,6 +142,8 @@ The built-in callback methods for narrowing the scope of inputs we will gather d
   Uses all valid form inputs (those that aren't ignored).
 * **changed**  
   Filters inputs down to only those that have had their value changed since the last autosave.
+* **modified**  
+  Filters inputs down to only those that have had their value modified since the last autosave.  
 
 #### Arguments
 
@@ -188,6 +198,8 @@ The built-in callback methods for determining whether or not to save.
 
 * **changed**  
   Only save if at least one input value has changed since the last autosave.
+* **modified**  
+  Only save if at least one input value has been modified since the last autosave.
 * **interval**  
   Only save on intervals. If anything else triggers an autosave, it will wait until the next interval to save.
 
@@ -278,7 +290,26 @@ This event is fired for each form autosave is attached to.
 
     changed(event, input);
 
-Triggered whenever an input value changes.
+Triggered whenever an input value changes ("change" event is fired).
+
+#### Elements
+
+This event is fired on the form containing the input.
+
+#### Arguments
+
+* **event** _Object_  
+  The jQuery.Event object.
+* **input** _Element_  
+  The DOM element that triggered the event.
+
+---
+
+### Modified
+
+    modified(event, input);
+
+Triggered whenever an input value is modified ("keyup" event is fired).
 
 #### Elements
 
@@ -318,4 +349,3 @@ Inspired by the jQuery.autosave plugin written by [Raymond Julin](https://github
 Copyright (C) 2011  
 Kyle Florence, Raymond Julin, Mads Erik Forberg and Simen Graaten.  
 jQuery.autosave is dual licensed under the BSD and MIT licenses.
-
