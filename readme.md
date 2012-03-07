@@ -1,4 +1,4 @@
-# jQuery.autosave
+# [jQuery.autosave](http://kflorence.github.com/jquery-autosave/)
 
     $("form").autosave();
 
