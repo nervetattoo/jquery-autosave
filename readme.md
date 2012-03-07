@@ -437,6 +437,6 @@ Inspired by the jQuery.autosave plugin written by [Raymond Julin](https://github
 
 ## License
 
-Copyright (C) 2012
-Kyle Florence, Raymond Julin, Mads Erik Forberg and Simen Graaten.
+Copyright (C) 2012  
+Kyle Florence, Raymond Julin, Mads Erik Forberg and Simen Graaten.  
 jQuery.autosave is dual licensed under the BSD and MIT licenses.
