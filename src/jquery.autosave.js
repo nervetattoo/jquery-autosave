@@ -3,7 +3,7 @@
  *
  * @author Kyle Florence
  * @website https://github.com/kflorence/jquery-autosave
- * @version 1.1.3.20120305
+ * @version 1.1.4.20120306
  *
  * Inspired by the jQuery.autosave plugin written by Raymond Julin,
  * Mads Erik Forberg and Simen Graaten.
@@ -70,24 +70,27 @@
     *    very least a "method" property and potentially an "options" property.
     */
   var _findCallback = function(callback, callbacks) {
-    var cb = {}, callbackType = typeof callback;
+    var cb = { options: {} }, callbackType = typeof callback;
 
     if (callbackType === "function") {
       // Custom function with no options
       cb.method = callback;
-    } else if (callbackType === "string" && callback in callbacks) {
+
+    } else if (callbackType === "string" && callbacks[callback]) {
       // Built in method, use default options
       cb.method = callbacks[callback].method;
+
     } else if (callbackType === "object") {
       callbackType = typeof callback.method;
 
       if (callbackType === "function") {
         // Custom function
         cb.method = callback.method;
-      } else if (callbackType === "string" && callback.method in callbacks) {
+
+      } else if (callbackType === "string" && callbacks[callback.method]) {
         // Built in method
         cb.method = callbacks[callback.method].method;
-        cb.options = $.extend(true, {}, callbacks[callback.method].options, callback.options);
+        cb.options = $.extend(true, cb.options, callbacks[callback.method].options, callback.options);
       }
     }
 
@@ -184,7 +187,7 @@
               // If callback has a valid method, we can use it
               if ($.isFunction(callback.method)) {
                 validCallbacks.push(callback);
-                }
+              }
             });
           }
 
@@ -199,13 +202,13 @@
         // Listen for changes on all inputs
         _bind($inputs, "change", this.options.namespace, function(e) {
           $(this).addClass(self.options.classes.changed);
-          $(this.form).triggerHandler(self.options.events.changed, this);
+          $(this.form).triggerHandler(self.options.events.changed, [this]);
         });
 
         // Listen for modifications on all inputs
         $inputs.bind(["keyup", this.options.namespace].join("."), function(e) {
             $(this).addClass(self.options.classes.modified);
-            $(this.form).triggerHandler(self.options.events.modified, this);
+            $(this.form).triggerHandler(self.options.events.modified, [this]);
         });
 
         // Set up triggers
