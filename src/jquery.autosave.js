@@ -686,8 +686,7 @@
         return false;
       },
       options: {
-        url: window.location.href,
-        type: "POST"
+        url: window.location.href
       }
     }
   });
