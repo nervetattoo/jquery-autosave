@@ -62,3 +62,19 @@ test("Constructor", function() {
 
   equal(instance6, undefined, "instance6 does not exist");
 });
+
+// https://github.com/nervetattoo/jquery-autosave/issues/10
+test("Select list value", function() {
+  expect(1);
+
+  var $form = $("#testForm1").autosave({
+	callbacks: {
+      scope: "changed",
+      data: ["serialize", function(options, $inputs, data) {
+        equal(data, "select=1", "select list has value of 1");
+      }]
+    }
+  });
+
+  $form.find("select[name=select]").val("1").change();
+});
