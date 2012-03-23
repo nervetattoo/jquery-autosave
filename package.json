@@ -17,7 +17,7 @@
         }
     ],
     "dependencies": {
-        "jquery": "1"
+        "jquery": ">=1.4.0"
     },
     "description": "Automatically and unobtrusively saves form data based on a set of criteria.",
     "keywords": [
@@ -29,6 +29,7 @@
 		"conditions",
 		"save"
     ],
+	"demo": "http://kflorence.github.com/jquery-autosave/",
     "homepage": "https://github.com/kflorence/jquery-autosave",
     "files": [
 		"dist/jquery.autosave.min.js"
