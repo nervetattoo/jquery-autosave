@@ -270,7 +270,7 @@
      */
     inputs: function(elements) {
       return this.elements(elements).map(function() {
-        return this.elements ? $.makeArray(this.elements) : this;
+        return this.elements ? $.makeArray($(this).find(":input")) : this;
       });
     },
 
