@@ -3,7 +3,7 @@
  *
  * @author Kyle Florence
  * @website https://github.com/kflorence/jquery-autosave
- * @version 1.1.4.20120306
+ * @version 1.1.5
  *
  * Inspired by the jQuery.autosave plugin written by Raymond Julin,
  * Mads Erik Forberg and Simen Graaten.
@@ -270,7 +270,7 @@
      */
     inputs: function(elements) {
       return this.elements(elements).map(function() {
-        return this.elements ? $.makeArray(this.elements) : this;
+        return this.elements ? $.makeArray($(this).find(":input")) : this;
       });
     },
 

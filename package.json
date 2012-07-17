@@ -1,0 +1,37 @@
+{
+    "name": "jquery.autosave",
+    "version": "1.1.5",
+    "title": "jQuery.autosave()",
+    "author": {
+        "name": "Kyle Florence",
+        "url": "https://github.com/kflorence/"
+    },
+    "licenses": [
+        {
+            "type": "BSD",
+            "url": "https://raw.github.com/kflorence/jquery-autosave/master/license-bsd"
+        },
+        {
+            "type": "MIT",
+            "url": "https://raw.github.com/kflorence/jquery-autosave/master/license-mit"
+        }
+    ],
+    "dependencies": {
+        "jquery": ">=1.4.0"
+    },
+    "description": "Automatically and unobtrusively saves form data based on a set of criteria.",
+    "keywords": [
+        "form",
+        "autosave",
+        "data",
+        "trigger",
+		"scope",
+		"conditions",
+		"save"
+    ],
+	"demo": "http://kflorence.github.com/jquery-autosave/",
+    "homepage": "https://github.com/kflorence/jquery-autosave",
+    "files": [
+		"dist/jquery.autosave.min.js"
+    ]
+}
