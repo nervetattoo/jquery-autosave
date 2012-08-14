@@ -454,8 +454,12 @@
      * @param {Boolean} [resetChanged]
      *    Whether or not to reset which elements were changed before saving.
      *    Defaults to true.
+     *
+     * @param {Boolean} [resetModified]
+     *    Whether or not to reset which elements were modified before saving.
+     *    Defaults to true.
      */
-    finished: function(queue, name, resetChanged) {
+    finished: function(queue, name, resetChanged, resetModified) {
       if (name === "save") {
         if (queue) {
           this.forms().triggerHandler(this.options.events.saved);
@@ -464,6 +468,11 @@
         // Reset changed by default
         if (resetChanged !== false) {
           this.changedInputs().removeClass(this.options.classes.changed);
+        }
+
+        // Reset modified by default
+        if (resetModified !== false) {
+          this.modifiedInputs().removeClass(this.options.classes.modified);
         }
 
         // If there is a timer running, start the next interval
