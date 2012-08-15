@@ -31,7 +31,7 @@ test("Trigger/Modified", function() {
     }
   });
 
-  $form.find(":input[type=text]").val("t").keyup();
+  $form.find(":input[type=text]").val("t").keyup().trigger("input");
 });
 
 asyncTest("Trigger/Interval", function() {
@@ -112,7 +112,7 @@ test("Scope/Modified", function() {
     }
   });
 
-  $form.find(":input[type=text]").val("t").keyup();
+  $form.find(":input[type=text]").val("t").keyup().trigger('input');
 });
 
 /**
@@ -212,7 +212,7 @@ test("Condition/Modified", function() {
   });
 
   $form.find(":input[name=save]").click();
-  $form.find(":input[type=text]").val("t").keyup();
+  $form.find(":input[type=text]").val("t").keyup().trigger('input');
 });
 
 /**
