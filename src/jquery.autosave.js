@@ -439,8 +439,12 @@
      * @param {Boolean} [resetChanged]
      *    Whether or not to reset which elements were changed before saving.
      *    Defaults to true.
+     *
+     * @param {Boolean} [resetModified]
+     *    Whether or not to reset which elements were modified before saving.
+     *    Defaults to true.
      */
-    next: function(name, resetChanged) {
+    next: function(name, resetChanged, resetModified) {
       var queue = this.$queues.queue(name);
 
       // Dequeue the next function if queue is not empty
@@ -450,7 +454,19 @@
 
       // Queue is empty or does not exist
       else {
-        this.finished(queue, name, resetChanged);
+        this.finished(queue, name, resetChanged, resetModified);
+      }
+    },
+
+    resetFields: function(resetChanged, resetModified) {
+      // Reset changed by default
+      if (resetChanged !== false) {
+        this.changedInputs().removeClass(this.options.classes.changed);
+      }
+
+      // Reset modified by default
+      if (resetModified !== false) {
+        this.modifiedInputs().removeClass(this.options.classes.modified);
       }
     },
 
@@ -475,15 +491,7 @@
           this.forms().triggerHandler(this.options.events.saved);
         }
 
-        // Reset changed by default
-        if (resetChanged !== false) {
-          this.changedInputs().removeClass(this.options.classes.changed);
-        }
-
-        // Reset modified by default
-        if (resetModified !== false) {
-          this.modifiedInputs().removeClass(this.options.classes.modified);
-        }
+        this.resetFields(resetChanged, resetModified);
 
         // If there is a timer running, start the next interval
         if (this.timer) {
