@@ -426,7 +426,7 @@
       }
 
       // Start the dequeue process
-      this.next("save", saved);
+      this.next("save", saved, saved);
     },
 
     /**
