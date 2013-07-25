@@ -458,6 +458,17 @@
       }
     },
 
+    /**
+     * Reset the changed/modified bit on fields.
+     *
+     * @param {Boolean} [resetChanged]
+     *    Whether or not to reset which elements were changed before saving.
+     *    Defaults to true.
+     *
+     * @param {Boolean} [resetModified]
+     *    Whether or not to reset which elements were modified before saving.
+     *    Defaults to true.
+     */
     resetFields: function(resetChanged, resetModified) {
       // Reset changed by default
       if (resetChanged !== false) {
