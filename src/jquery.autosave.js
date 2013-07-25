@@ -97,22 +97,6 @@
     return cb;
   };
 
-  /**
-   * Private implementation of jQuery.type for backwards compatibility.
-   * See: http://api.jquery.com/jQuery.type
-   */
-  var _type = $.type || (function() {
-    var class2type = {}, toString = Object.prototype.toString;
-
-    $.each("Boolean Number String Function Array Date RegExp Object".split(" "), function(i, name) {
-      class2type["[object " + name + "]"] = name.toLowerCase();
-    });
-
-    return function(obj) {
-      return obj == null ? String(obj) : class2type[toString.call(obj)] || "object";
-    }
-  })();
-
   $.autosave = {
     timer: 0,
     $queues: $({}),
@@ -695,8 +679,8 @@
           o.data = o.data.call(self, formData);
         }
 
-        var formDataType = _type(formData),
-            optionsDataType = _type(o.data);
+        var formDataType = $.type(formData),
+            optionsDataType = $.type(o.data);
 
         // No options data given, use form data
         if (optionsDataType == "undefined") {
