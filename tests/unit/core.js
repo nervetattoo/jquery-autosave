@@ -8,7 +8,7 @@ test("Requirements", function() {
 });
 
 test("Constructor", function() {
-  expect(21);
+  expect(20);
 
   var $test1 = $("#testForm1").autosave();
   var instance1 = $test1.data("autosave");
@@ -16,10 +16,6 @@ test("Constructor", function() {
   equal(typeof instance1, "object", "$test1 contains an autosave instance");
   equal(instance1.forms().length, 1, "$test1 includes one form element");
   equal(instance1.inputs().length, 12, "$test1 includes twelve form input elements");
-
-  var events = instance1.inputs().data("events");
-
-  ok(events.change || events.propertychange, "instance1 is listening for changes to inputs");
 
   // "trigger" "scope" "data" "conditions" "save"
   $.each(instance1.options.callbacks, function(name, value) {
