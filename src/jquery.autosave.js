@@ -11,48 +11,6 @@
  * Dual licensed under the MIT and BSD Licenses.
  */
 ;(function($, window, document, undefined) {
-  /**
-   * Fixes binding the "change" event to checkboxes and select[type=multiple]
-   * for Internet Explorer. See: https://gist.github.com/770449
-   *
-   * @param {jQuery|Element|Element[]} elements
-   *    The DOM Element we wish to bind the event to.
-   *
-   * @param {String} eventType
-   *    The name of the event we want to bind to.
-   *
-   * @param {String} namespace
-   *    The namespace for the event, or an empty string if there isn't one.
-   *
-   * @param {function} callback
-   *    The function to execute when the event is triggered
-   */
-  var _bind = function(elements, eventType, namespace, callback) {
-    var $elements = $(elements),
-      rValidProps = /^(checked|selectedIndex)$/,
-      hasPropertyChange = ("onpropertychange" in document.body);
-
-    if (!$elements.length || typeof eventType !== "string") {
-      return $elements;
-    }
-
-    if (eventType !== "change") {
-      return $elements.bind(eventType, callback);
-    }
-
-    $elements.each(function() {
-      eventType = hasPropertyChange && (this.type === "checkbox"
-        || this.tagName.toLowerCase() === "select" && this.multiple)
-        ? "propertychange" : "change";
-
-      $(this).bind([eventType, namespace].join("."), function(e) {
-        if (e.type !== "propertychange"
-          || rValidProps.test(window.event.propertyName)) {
-          callback.call(this, e);
-        }
-      });
-    });
-  };
 
   /**
     * Attempts to find a callback from a list of callbacks.
@@ -184,7 +142,7 @@
         });
 
         // Listen for changes on all inputs
-        _bind($inputs, "change", this.options.namespace, function(e) {
+        $inputs.bind(["change", this.options.namespace].join("."), function(e) {
           $(this).addClass(self.options.classes.changed);
           $(this.form).triggerHandler(self.options.events.changed, [this]);
         });
