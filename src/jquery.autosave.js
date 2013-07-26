@@ -12,6 +12,15 @@
  */
 ;(function($, window, document, undefined) {
 
+  // Figure out if html5 "input" event is available
+  var inputSupported = (function() {
+      var tmp = document.createElement("input");
+      if ('oninput' in tmp) return true;
+      // also try workaround for older versions of Firefox
+      tmp.setAttribute("oninput", "return;");
+      return typeof tmp["oninput"] === "function";
+  }());
+
   /**
     * Attempts to find a callback from a list of callbacks.
     *
@@ -148,15 +157,7 @@
         });
 
         // Listen for modifications on all inputs
-        // first, figure out if html5 "input" event is available
-        // if not, use "keyup"
-        var el = document.createElement("input");
-        var inputSupported = ("oninput" in el);
-        if (!inputSupported) {  // work around for older versions of Firefox
-            el.setAttribute("oninput", "return;");
-            inputSupported = typeof el["oninput"] === "function";
-        }
-        el = null;
+        // Use html5 "input" event is available. Otherwise, use "keyup".
         var modifyTriggerEvent = inputSupported ? "input" : "keyup";
         $inputs.bind([modifyTriggerEvent, this.options.namespace].join("."), function(e) {
             $(this).addClass(self.options.classes.modified);
