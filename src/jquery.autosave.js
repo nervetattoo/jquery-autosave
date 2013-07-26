@@ -118,13 +118,11 @@
         $forms.data(this.options.namespace, this);
 
         $.each(this.options.events, function(name, eventName) {
-          self.options.events[name]
-            = [eventName, self.options.namespace].join(".");
+          self.options.events[name] = [eventName, self.options.namespace].join(".");
         });
 
         $.each(this.options.classes, function(name, className) {
-          self.options.classes[name]
-            = [self.options.namespace, className].join("-");
+          self.options.classes[name] = [self.options.namespace, className].join("-");
         });
 
         // Parse callback options into an array of callback objects
@@ -160,8 +158,8 @@
         // Use html5 "input" event is available. Otherwise, use "keyup".
         var modifyTriggerEvent = inputSupported ? "input" : "keyup";
         $inputs.bind([modifyTriggerEvent, this.options.namespace].join("."), function(e) {
-            $(this).addClass(self.options.classes.modified);
-            $(this.form).triggerHandler(self.options.events.modified, [this]);
+          $(this).addClass(self.options.classes.modified);
+          $(this.form).triggerHandler(self.options.events.modified, [this]);
         });
 
         // Set up triggers
