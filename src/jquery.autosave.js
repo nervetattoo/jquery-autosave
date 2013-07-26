@@ -354,9 +354,14 @@
             // Add all of our save methods to the queue
             $.each(this.options.callbacks.save, function(i, save) {
               self.$queues.queue("save", function() {
-                // Methods that return false should handle the call to next()
-                if (save.method.call(self, save.options, formData) !== false) {
-                  self.next("save");
+                if (save.method.call(self, save.options, formData) === false) {
+                  // Methods that return false should handle the call to next()
+                  // we call resetFields manually here (immediately) before the async 
+                  // save fires, because the callback will call next without 'true'.
+                  // and we want to reset the fields when the async save *starts*.
+                  self.resetFields();
+                } else {
+                  self.next("save", true);
                 }
               });
             });
@@ -368,7 +373,7 @@
       }
 
       // Start the dequeue process
-      this.next("save", saved, saved);
+      this.next("save", saved);
     },
 
     /**
@@ -379,14 +384,10 @@
      *    The name of the queue.
      *
      * @param {Boolean} [resetChanged]
-     *    Whether or not to reset which elements were changed before saving.
-     *    Defaults to true.
-     *
-     * @param {Boolean} [resetModified]
-     *    Whether or not to reset which elements were modified before saving.
-     *    Defaults to true.
+     *    Whether or not to reset which elements were changed/modified before saving.
+     *    Defaults to false.
      */
-    next: function(name, resetChanged, resetModified) {
+    next: function(name, resetChanged) {
       var queue = this.$queues.queue(name);
 
       // Dequeue the next function if queue is not empty
@@ -396,31 +397,16 @@
 
       // Queue is empty or does not exist
       else {
-        this.finished(queue, name, resetChanged, resetModified);
+        this.finished(queue, name, resetChanged);
       }
     },
 
     /**
-     * Reset the changed/modified bit on fields.
-     *
-     * @param {Boolean} [resetChanged]
-     *    Whether or not to reset which elements were changed before saving.
-     *    Defaults to true.
-     *
-     * @param {Boolean} [resetModified]
-     *    Whether or not to reset which elements were modified before saving.
-     *    Defaults to true.
+     * Reset which elements where changed/modified before saving.
      */
-    resetFields: function(resetChanged, resetModified) {
-      // Reset changed by default
-      if (resetChanged !== false) {
-        this.changedInputs().removeClass(this.options.classes.changed);
-      }
-
-      // Reset modified by default
-      if (resetModified !== false) {
-        this.modifiedInputs().removeClass(this.options.classes.modified);
-      }
+    resetFields: function() {
+      this.changedInputs().removeClass(this.options.classes.changed);
+      this.modifiedInputs().removeClass(this.options.classes.modified);
     },
 
     /**
@@ -431,20 +417,18 @@
      *    The queue that has finished processing.
      *
      * @param {Boolean} [resetChanged]
-     *    Whether or not to reset which elements were changed before saving.
-     *    Defaults to true.
-     *
-     * @param {Boolean} [resetModified]
-     *    Whether or not to reset which elements were modified before saving.
-     *    Defaults to true.
+     *    Whether or not to reset which elements were changed/modified before saving.
+     *    Defaults to false
      */
-    finished: function(queue, name, resetChanged, resetModified) {
+    finished: function(queue, name, resetChanged) {
       if (name === "save") {
         if (queue) {
           this.forms().triggerHandler(this.options.events.saved);
         }
 
-        this.resetFields(resetChanged, resetModified);
+        if (resetChanged) {
+          this.resetFields();
+        }
 
         // If there is a timer running, start the next interval
         if (this.timer) {
