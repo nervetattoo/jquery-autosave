@@ -66,7 +66,14 @@
 
   $.autosave = {
     timer: 0,
+
     $queues: $({}),
+
+    states: {
+        changed: "changed",
+        modified: "modified"
+    },
+
     options: {
       namespace: "autosave",
       callbacks: {
@@ -83,8 +90,6 @@
         modified: "modified"
       },
       classes: {
-        changed: "changed",
-        modified: "modified",
         ignore: "ignore"
       }
     },
@@ -150,7 +155,7 @@
 
         // Listen for changes on all inputs
         $inputs.bind(["change", this.options.namespace].join("."), function(e) {
-          $(this).addClass(self.options.classes.changed);
+          $(this).data([self.options.namespace, self.states.changed].join("."), true);
           $(this.form).triggerHandler(self.options.events.changed, [this]);
         });
 
@@ -158,7 +163,7 @@
         // Use html5 "input" event is available. Otherwise, use "keyup".
         var modifyTriggerEvent = inputSupported ? "input" : "keyup";
         $inputs.bind([modifyTriggerEvent, this.options.namespace].join("."), function(e) {
-          $(this).addClass(self.options.classes.modified);
+          $(this).data([self.options.namespace, self.states.modified].join("."), true);
           $(this.form).triggerHandler(self.options.events.modified, [this]);
         });
 
@@ -257,7 +262,7 @@
       var self = this;
 
       return this.inputs(inputs).filter(function() {
-        return $(this).hasClass(self.options.classes.changed);
+        return $(this).data([self.options.namespace, self.states.changed].join("."));
       });
     },
 
@@ -275,7 +280,7 @@
       var self = this;
 
       return this.inputs(inputs).filter(function() {
-        return $(this).hasClass(self.options.classes.modified);
+        return $(this).data([self.options.namespace, self.states.modified].join("."));
       });
     },
 
@@ -404,8 +409,8 @@
      * Reset which elements where changed/modified before saving.
      */
     resetFields: function() {
-      this.changedInputs().removeClass(this.options.classes.changed);
-      this.modifiedInputs().removeClass(this.options.classes.modified);
+      this.inputs().data([this.options.namespace, this.states.changed].join("."), false);
+      this.inputs().data([this.options.namespace, this.states.modified].join("."), false);
     },
 
     /**

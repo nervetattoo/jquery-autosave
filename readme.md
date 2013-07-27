@@ -32,8 +32,6 @@ This plugin works strictly with forms and form inputs of any type. Any other ele
         modified: "modified"
       },
       classes: {
-        changed: "changed",
-        modified: "modified",
         ignore: "ignore"
       }
     }
@@ -66,10 +64,6 @@ Options is a set of key/value pairs that can be passed into the plugin as the fi
     This event is triggered whenever an input value is modified ("keyup" event is fired) on the form containing that input. It can be bound to if you need to be notified whenever an input value is modified.
 * **classes** _Object_  
   Contains a set of key/value pairs that allow yout o chang the name of classes used within the plugin. Keep in mind that these classes will be namespaced on initialization like: "namespace-className"
-  * **changed** _String_  
-    The class name that will be applied to elements whose value has been changed but not yet saved.
-  * **changed** _String_  
-    The class name that will be applied to elements whose value has been modified but not yet saved.
   * **ignore** _String_  
     Inputs with this class name will be ignored by the plugin when gathering data.
 
