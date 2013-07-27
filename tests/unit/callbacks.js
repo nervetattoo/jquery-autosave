@@ -233,7 +233,8 @@ asyncTest("Save/AJAX/Serialize", function() {
             return "number=" + ++num;
           },
           beforeSend: function(xhr, settings) {
-            equals( settings.data, "text=test&number=1", "Data merged successfully" );
+            var qs = settings.url.split('?')[1];
+            equal( qs, "text=test&number=1", "Data merged successfully" );
           },
           complete: function() {
             ok(done = true, "AJAX save completed successfully");
@@ -260,7 +261,8 @@ asyncTest("Save/AJAX/SerializeArray", function() {
             return [{ name: "number", value: ++num }];
           },
           beforeSend: function(xhr, settings) {
-            equals( settings.data, "text=test&number=1", "Data merged successfully" );
+            var qs = settings.url.split('?')[1];
+            equal( qs, "text=test&number=1", "Data merged successfully" );
           },
           complete: function(xhr, status) {
             ok(done = true, "AJAX save completed successfully");
@@ -287,7 +289,8 @@ asyncTest("Save/AJAX/SerializeObject", function() {
             return { number: ++num };
           },
           beforeSend: function(xhr, settings) {
-            equals( settings.data, "text=test&number=1", "Data merged successfully" );
+            var qs = settings.url.split('?')[1];
+            equal( qs, "text=test&number=1", "Data merged successfully" );
           },
           complete: function(xhr, status) {
             ok(done = true, "AJAX save completed successfully");
@@ -333,7 +336,8 @@ asyncTest("Save/AJAX - No options.data", function() {
         method: "ajax",
         options: {
           beforeSend: function(xhr, settings) {
-            equals( settings.data, "text=test", "Data merged successfully" );
+            var qs = settings.url.split('?')[1];
+            equal( qs, "text=test", "Data merged successfully" );
           },
           complete: function(xhr, status) {
             ok(done = true, "AJAX save completed successfully");

@@ -3,7 +3,7 @@
  *
  * @author Kyle Florence
  * @website https://github.com/kflorence/jquery-autosave
- * @version 1.1.5
+ * @version 1.2-pre
  *
  * Inspired by the jQuery.autosave plugin written by Raymond Julin,
  * Mads Erik Forberg and Simen Graaten.
@@ -11,48 +11,15 @@
  * Dual licensed under the MIT and BSD Licenses.
  */
 ;(function($, window, document, undefined) {
-  /**
-   * Fixes binding the "change" event to checkboxes and select[type=multiple]
-   * for Internet Explorer. See: https://gist.github.com/770449
-   *
-   * @param {jQuery|Element|Element[]} elements
-   *    The DOM Element we wish to bind the event to.
-   *
-   * @param {String} eventType
-   *    The name of the event we want to bind to.
-   *
-   * @param {String} namespace
-   *    The namespace for the event, or an empty string if there isn't one.
-   *
-   * @param {function} callback
-   *    The function to execute when the event is triggered
-   */
-  var _bind = function(elements, eventType, namespace, callback) {
-    var $elements = $(elements),
-      rValidProps = /^(checked|selectedIndex)$/,
-      hasPropertyChange = ("onpropertychange" in document.body);
 
-    if (!$elements.length || typeof eventType !== "string") {
-      return $elements;
-    }
-
-    if (eventType !== "change") {
-      return $elements.bind(eventType, callback);
-    }
-
-    $elements.each(function() {
-      eventType = hasPropertyChange && (this.type === "checkbox"
-        || this.tagName.toLowerCase() === "select" && this.multiple)
-        ? "propertychange" : "change";
-
-      $(this).bind([eventType, namespace].join("."), function(e) {
-        if (e.type !== "propertychange"
-          || rValidProps.test(window.event.propertyName)) {
-          callback.call(this, e);
-        }
-      });
-    });
-  };
+  // Figure out if html5 "input" event is available
+  var inputSupported = (function() {
+      var tmp = document.createElement("input");
+      if ('oninput' in tmp) return true;
+      // also try workaround for older versions of Firefox
+      tmp.setAttribute("oninput", "return;");
+      return typeof tmp["oninput"] === "function";
+  }());
 
   /**
     * Attempts to find a callback from a list of callbacks.
@@ -96,22 +63,6 @@
 
     return cb;
   };
-
-  /**
-   * Private implementation of jQuery.type for backwards compatibility.
-   * See: http://api.jquery.com/jQuery.type
-   */
-  var _type = $.type || (function() {
-    var class2type = {}, toString = Object.prototype.toString;
-
-    $.each("Boolean Number String Function Array Date RegExp Object".split(" "), function(i, name) {
-      class2type["[object " + name + "]"] = name.toLowerCase();
-    });
-
-    return function(obj) {
-      return obj == null ? String(obj) : class2type[toString.call(obj)] || "object";
-    }
-  })();
 
   $.autosave = {
     timer: 0,
@@ -167,13 +118,11 @@
         $forms.data(this.options.namespace, this);
 
         $.each(this.options.events, function(name, eventName) {
-          self.options.events[name]
-            = [eventName, self.options.namespace].join(".");
+          self.options.events[name] = [eventName, self.options.namespace].join(".");
         });
 
         $.each(this.options.classes, function(name, className) {
-          self.options.classes[name]
-            = [self.options.namespace, className].join("-");
+          self.options.classes[name] = [self.options.namespace, className].join("-");
         });
 
         // Parse callback options into an array of callback objects
@@ -200,25 +149,17 @@
         });
 
         // Listen for changes on all inputs
-        _bind($inputs, "change", this.options.namespace, function(e) {
+        $inputs.bind(["change", this.options.namespace].join("."), function(e) {
           $(this).addClass(self.options.classes.changed);
           $(this.form).triggerHandler(self.options.events.changed, [this]);
         });
 
         // Listen for modifications on all inputs
-        // first, figure out if html5 "input" event is available
-        // if not, use "keyup"
-        var el = document.createElement("input");
-        var inputSupported = ("oninput" in el);
-        if (!inputSupported) {  // work around for older versions of Firefox
-            el.setAttribute("oninput", "return;");
-            inputSupported = typeof el["oninput"] === "function";
-        }
-        el = null;
+        // Use html5 "input" event is available. Otherwise, use "keyup".
         var modifyTriggerEvent = inputSupported ? "input" : "keyup";
         $inputs.bind([modifyTriggerEvent, this.options.namespace].join("."), function(e) {
-            $(this).addClass(self.options.classes.modified);
-            $(this.form).triggerHandler(self.options.events.modified, [this]);
+          $(this).addClass(self.options.classes.modified);
+          $(this.form).triggerHandler(self.options.events.modified, [this]);
         });
 
         // Set up triggers
@@ -412,9 +353,14 @@
             // Add all of our save methods to the queue
             $.each(this.options.callbacks.save, function(i, save) {
               self.$queues.queue("save", function() {
-                // Methods that return false should handle the call to next()
-                if (save.method.call(self, save.options, formData) !== false) {
-                  self.next("save");
+                if (save.method.call(self, save.options, formData) === false) {
+                  // Methods that return false should handle the call to next()
+                  // we call resetFields manually here (immediately) before the async 
+                  // save fires, because the callback will call next without 'true'.
+                  // and we want to reset the fields when the async save *starts*.
+                  self.resetFields();
+                } else {
+                  self.next("save", true);
                 }
               });
             });
@@ -437,8 +383,8 @@
      *    The name of the queue.
      *
      * @param {Boolean} [resetChanged]
-     *    Whether or not to reset which elements were changed before saving.
-     *    Defaults to true.
+     *    Whether or not to reset which elements were changed/modified before saving.
+     *    Defaults to false.
      */
     next: function(name, resetChanged) {
       var queue = this.$queues.queue(name);
@@ -455,6 +401,14 @@
     },
 
     /**
+     * Reset which elements where changed/modified before saving.
+     */
+    resetFields: function() {
+      this.changedInputs().removeClass(this.options.classes.changed);
+      this.modifiedInputs().removeClass(this.options.classes.modified);
+    },
+
+    /**
      * Called whenever a queue finishes processing, usually to perform some
      * type of cleanup.
      *
@@ -462,27 +416,17 @@
      *    The queue that has finished processing.
      *
      * @param {Boolean} [resetChanged]
-     *    Whether or not to reset which elements were changed before saving.
-     *    Defaults to true.
-     *
-     * @param {Boolean} [resetModified]
-     *    Whether or not to reset which elements were modified before saving.
-     *    Defaults to true.
+     *    Whether or not to reset which elements were changed/modified before saving.
+     *    Defaults to false
      */
-    finished: function(queue, name, resetChanged, resetModified) {
+    finished: function(queue, name, resetChanged) {
       if (name === "save") {
         if (queue) {
           this.forms().triggerHandler(this.options.events.saved);
         }
 
-        // Reset changed by default
-        if (resetChanged !== false) {
-          this.changedInputs().removeClass(this.options.classes.changed);
-        }
-
-        // Reset modified by default
-        if (resetModified !== false) {
-          this.modifiedInputs().removeClass(this.options.classes.modified);
+        if (resetChanged) {
+          this.resetFields();
         }
 
         // If there is a timer running, start the next interval
@@ -676,8 +620,8 @@
           o.data = o.data.call(self, formData);
         }
 
-        var formDataType = _type(formData),
-            optionsDataType = _type(o.data);
+        var formDataType = $.type(formData),
+            optionsDataType = $.type(o.data);
 
         // No options data given, use form data
         if (optionsDataType == "undefined") {
