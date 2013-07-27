@@ -417,10 +417,7 @@ This event is fired on the form containing the input.
 
 jQuery.autosave requires:
 
-* jQuery version 1.4.0+ (recommended)
-* jQuery version 1.2.3+ (see note below)
-
-**Note**: There are several bugs in the [jQuery.extend](http://api.jquery.com/jQuery.extend/) function that will cause unexpected behavior in jQuery versions 1.3.2 and below. To make autosave fully compatible with jQuery versions 1.2.3 through 1.3.2, you should include the [jquery.extend-patch.js](https://github.com/kflorence/misc-js/blob/master/jquery/patches/jquery.extend-patch.js) file _before_ initializing the plugin. This file will add additional functionality to jQuery core and fix the extend method for you. Please be advised that this patch should only be used as a last resort. **If at all possible, please upgrade to jQuery version 1.4 or higher.**
+* jQuery version 1.4.0+
 
 ## Compatibility
 
@@ -432,7 +429,7 @@ Verified to work correctly on:
 
 ## Credits
 
-Written by [Kyle Florence](https://github.com/kflorence/).  
+Written by [Kyle Florence](https://github.com/kflorence/) and [other contributers](https://github.com/nervetattoo/jquery-autosave/graphs/contributors).
 Inspired by the jQuery.autosave plugin written by [Raymond Julin](https://github.com/nervetattoo/), Mads Erik Forberg and Simen Graaten.
 
 ## License
