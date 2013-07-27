@@ -109,11 +109,8 @@
     initialize: function($elements, options) {
       var self = this;
 
-      $.extend(this, {
-        context: $elements.context || document,
-        selector: $elements.selector || $elements,
-        options: $.extend(true, {}, this.options, options)
-      });
+      this.$elements = $elements;
+      this.options = $.extend(true, {}, this.options, options);
 
       // If length == 0, we have no forms or inputs
       if (this.elements().length) {
@@ -177,23 +174,18 @@
     },
 
     /**
-     * Returns the forms and inputs matched by the selector and context.
+     * Returns the forms and inputs within a specific context.
      *
-     * @param {jQuery|Element|Element[]} [selector]
-     *    The selector expression to use. Uses the selector passed into the
-     *    plugin by default.
-     *
-     * @param {jQuery|Element|Document} [context]
-     *    A context to limit our search. Uses document by default.
+     * @param {jQuery|Element|Element[]} [elements]
+     *    The elements to search within. Uses the pass elements by default.
      *
      * @return {jQuery}
      *    A jQuery object containing any matched form and input elements.
      */
-    elements: function(selector, context) {
-      selector = selector || this.selector;
-      context = context || this.context;
+    elements: function(elements) {
+      if (!elements) elements = this.$elements;
 
-      return $(selector, context).filter(function() {
+      return $(elements).filter(function() {
         return (this.elements || this.form);
       });
     },
