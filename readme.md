@@ -74,7 +74,7 @@ Options is a set of key/value pairs that can be passed into the plugin as the fi
 If you use this plugin as is (without providing any options), this is what you can expect.
 
 1. **trigger** An autosave is triggered any time an input value changes.
-2. **scope** The scope of inputs is narrowed to include only those whose value has changed since the last autosave.
+2. **scope** Due to the `change` default trigger, the scope of inputs is narrowed to include only those whose value has changed since the last autosave.
 3. **data** Data is gathered using jQuery's [.serialize()](http://api.jquery.com/serialize/) function.
 4. **condition** There are no conditions that need to pass to complete this save.
 5. **save** The data is sent to the current browser URL using the [jQuery.ajax()](http://api.jquery.com/jQuery.ajax/) function.
