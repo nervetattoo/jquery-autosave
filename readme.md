@@ -30,9 +30,6 @@ This plugin works strictly with forms and form inputs of any type. Any other ele
         saved: "saved",
         changed: "changed",
         modified: "modified"
-      },
-      classes: {
-        ignore: "ignore"
       }
     }
 
@@ -61,11 +58,7 @@ Options is a set of key/value pairs that can be passed into the plugin as the fi
   * **changed** _String_  
     This event is triggered whenever an input value changes ("change" event is fired) on the form containing that input. It can be bound to if you need to be notified whenever an input value changes.
   * **modified** _String_  
-    This event is triggered whenever an input value is modified ("keyup" event is fired) on the form containing that input. It can be bound to if you need to be notified whenever an input value is modified.
-* **classes** _Object_  
-  Contains a set of key/value pairs that allow yout o chang the name of classes used within the plugin. Keep in mind that these classes will be namespaced on initialization like: "namespace-className"
-  * **ignore** _String_  
-    Inputs with this class name will be ignored by the plugin when gathering data.
+    This event is triggered whenever an input value is modified ("input" or "keyup" event is fired) on the form containing that input. It can be bound to if you need to be notified whenever an input value is modified.
 
 ## Default Behavior
 
@@ -187,7 +180,7 @@ Trigger methods do not require a return value.
 The built-in callback methods for narrowing the scope of inputs we will gather data from.
 
 * **all**  
-  Uses all valid form inputs (those that aren't ignored).
+  Uses all valid form inputs
 * **changed**  
   Filters inputs down to only those that have had their value changed since the last autosave.
 * **modified**  

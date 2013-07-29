@@ -88,9 +88,6 @@
         saved: "saved",
         changed: "changed",
         modified: "modified"
-      },
-      classes: {
-        ignore: "ignore"
       }
     },
 
@@ -121,10 +118,6 @@
 
         $.each(this.options.events, function(name, eventName) {
           self.options.events[name] = [eventName, self.options.namespace].join(".");
-        });
-
-        $.each(this.options.classes, function(name, className) {
-          self.options.classes[name] = [self.options.namespace, className].join("-");
         });
 
         // Parse callback options into an array of callback objects
@@ -233,11 +226,7 @@
      *    A jQuery object containing any matched input elements.
      */
     validInputs: function(inputs) {
-      var self = this;
-
-      return this.inputs(inputs).filter(function() {
-        return !$(this).hasClass(self.options.classes.ignore);
-      });
+      return this.inputs(inputs);
     },
 
     /**
