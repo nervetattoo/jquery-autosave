@@ -176,7 +176,9 @@
      *    A jQuery object containing any matched form and input elements.
      */
     elements: function(elements) {
-      if (!elements) elements = this.$elements;
+      if (!elements) {
+        elements = this.$elements;
+      }
 
       return $(elements).filter(function() {
         return (this.elements || this.form);
