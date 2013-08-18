@@ -404,7 +404,7 @@ This event is fired on the form containing the input.
 
 jQuery.autosave requires:
 
-* jQuery version 1.4.0+
+* jQuery version 1.4.3+
 
 ## Compatibility
 
