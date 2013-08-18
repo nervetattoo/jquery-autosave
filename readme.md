@@ -30,11 +30,6 @@ This plugin works strictly with forms and form inputs of any type. Any other ele
         saved: "saved",
         changed: "changed",
         modified: "modified"
-      },
-      classes: {
-        changed: "changed",
-        modified: "modified",
-        ignore: "ignore"
       }
     }
 
@@ -63,15 +58,7 @@ Options is a set of key/value pairs that can be passed into the plugin as the fi
   * **changed** _String_  
     This event is triggered whenever an input value changes ("change" event is fired) on the form containing that input. It can be bound to if you need to be notified whenever an input value changes.
   * **modified** _String_  
-    This event is triggered whenever an input value is modified ("keyup" event is fired) on the form containing that input. It can be bound to if you need to be notified whenever an input value is modified.
-* **classes** _Object_  
-  Contains a set of key/value pairs that allow yout o chang the name of classes used within the plugin. Keep in mind that these classes will be namespaced on initialization like: "namespace-className"
-  * **changed** _String_  
-    The class name that will be applied to elements whose value has been changed but not yet saved.
-  * **changed** _String_  
-    The class name that will be applied to elements whose value has been modified but not yet saved.
-  * **ignore** _String_  
-    Inputs with this class name will be ignored by the plugin when gathering data.
+    This event is triggered whenever an input value is modified ("input" or "keyup" event is fired) on the form containing that input. It can be bound to if you need to be notified whenever an input value is modified.
 
 ## Default Behavior
 
@@ -80,7 +67,7 @@ Options is a set of key/value pairs that can be passed into the plugin as the fi
 If you use this plugin as is (without providing any options), this is what you can expect.
 
 1. **trigger** An autosave is triggered any time an input value changes.
-2. **scope** The scope of inputs is narrowed to include only those whose value has changed since the last autosave.
+2. **scope** Due to the `change` default trigger, the scope of inputs is narrowed to include only those whose value has changed since the last autosave.
 3. **data** Data is gathered using jQuery's [.serialize()](http://api.jquery.com/serialize/) function.
 4. **condition** There are no conditions that need to pass to complete this save.
 5. **save** The data is sent to the current browser URL using the [jQuery.ajax()](http://api.jquery.com/jQuery.ajax/) function.
@@ -193,7 +180,7 @@ Trigger methods do not require a return value.
 The built-in callback methods for narrowing the scope of inputs we will gather data from.
 
 * **all**  
-  Uses all valid form inputs (those that aren't ignored).
+  Uses all valid form inputs
 * **changed**  
   Filters inputs down to only those that have had their value changed since the last autosave.
 * **modified**  
@@ -417,10 +404,7 @@ This event is fired on the form containing the input.
 
 jQuery.autosave requires:
 
-* jQuery version 1.4.0+ (recommended)
-* jQuery version 1.2.3+ (see note below)
-
-**Note**: There are several bugs in the [jQuery.extend](http://api.jquery.com/jQuery.extend/) function that will cause unexpected behavior in jQuery versions 1.3.2 and below. To make autosave fully compatible with jQuery versions 1.2.3 through 1.3.2, you should include the [jquery.extend-patch.js](https://github.com/kflorence/misc-js/blob/master/jquery/patches/jquery.extend-patch.js) file _before_ initializing the plugin. This file will add additional functionality to jQuery core and fix the extend method for you. Please be advised that this patch should only be used as a last resort. **If at all possible, please upgrade to jQuery version 1.4 or higher.**
+* jQuery version 1.4.3+
 
 ## Compatibility
 
@@ -432,7 +416,7 @@ Verified to work correctly on:
 
 ## Credits
 
-Written by [Kyle Florence](https://github.com/kflorence/).  
+Written by [Kyle Florence](https://github.com/kflorence/) and [other contributers](https://github.com/nervetattoo/jquery-autosave/graphs/contributors).
 Inspired by the jQuery.autosave plugin written by [Raymond Julin](https://github.com/nervetattoo/), Mads Erik Forberg and Simen Graaten.
 
 ## License
