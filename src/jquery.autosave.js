@@ -66,7 +66,14 @@
 
   $.autosave = {
     timer: 0,
+
     $queues: $({}),
+
+    states: {
+        changed: "changed",
+        modified: "modified"
+    },
+
     options: {
       namespace: "autosave",
       callbacks: {
@@ -81,11 +88,6 @@
         saved: "saved",
         changed: "changed",
         modified: "modified"
-      },
-      classes: {
-        changed: "changed",
-        modified: "modified",
-        ignore: "ignore"
       }
     },
 
@@ -104,11 +106,8 @@
     initialize: function($elements, options) {
       var self = this;
 
-      $.extend(this, {
-        context: $elements.context || document,
-        selector: $elements.selector || $elements,
-        options: $.extend(true, {}, this.options, options)
-      });
+      this.$elements = $elements;
+      this.options = $.extend(true, {}, this.options, options);
 
       // If length == 0, we have no forms or inputs
       if (this.elements().length) {
@@ -119,10 +118,6 @@
 
         $.each(this.options.events, function(name, eventName) {
           self.options.events[name] = [eventName, self.options.namespace].join(".");
-        });
-
-        $.each(this.options.classes, function(name, className) {
-          self.options.classes[name] = [self.options.namespace, className].join("-");
         });
 
         // Parse callback options into an array of callback objects
@@ -150,7 +145,7 @@
 
         // Listen for changes on all inputs
         $inputs.bind(["change", this.options.namespace].join("."), function(e) {
-          $(this).addClass(self.options.classes.changed);
+          $(this).data([self.options.namespace, self.states.changed].join("."), true);
           $(this.form).triggerHandler(self.options.events.changed, [this]);
         });
 
@@ -158,7 +153,7 @@
         // Use html5 "input" event is available. Otherwise, use "keyup".
         var modifyTriggerEvent = inputSupported ? "input" : "keyup";
         $inputs.bind([modifyTriggerEvent, this.options.namespace].join("."), function(e) {
-          $(this).addClass(self.options.classes.modified);
+          $(this).data([self.options.namespace, self.states.modified].join("."), true);
           $(this.form).triggerHandler(self.options.events.modified, [this]);
         });
 
@@ -172,23 +167,20 @@
     },
 
     /**
-     * Returns the forms and inputs matched by the selector and context.
+     * Returns the forms and inputs within a specific context.
      *
-     * @param {jQuery|Element|Element[]} [selector]
-     *    The selector expression to use. Uses the selector passed into the
-     *    plugin by default.
-     *
-     * @param {jQuery|Element|Document} [context]
-     *    A context to limit our search. Uses document by default.
+     * @param {jQuery|Element|Element[]} [elements]
+     *    The elements to search within. Uses the pass elements by default.
      *
      * @return {jQuery}
      *    A jQuery object containing any matched form and input elements.
      */
-    elements: function(selector, context) {
-      selector = selector || this.selector;
-      context = context || this.context;
+    elements: function(elements) {
+      if (!elements) {
+        elements = this.$elements;
+      }
 
-      return $(selector, context).filter(function() {
+      return $(elements).filter(function() {
         return (this.elements || this.form);
       });
     },
@@ -236,11 +228,7 @@
      *    A jQuery object containing any matched input elements.
      */
     validInputs: function(inputs) {
-      var self = this;
-
-      return this.inputs(inputs).filter(function() {
-        return !$(this).hasClass(self.options.classes.ignore);
-      });
+      return this.inputs(inputs);
     },
 
     /**
@@ -257,7 +245,7 @@
       var self = this;
 
       return this.inputs(inputs).filter(function() {
-        return $(this).hasClass(self.options.classes.changed);
+        return $(this).data([self.options.namespace, self.states.changed].join("."));
       });
     },
 
@@ -275,7 +263,7 @@
       var self = this;
 
       return this.inputs(inputs).filter(function() {
-        return $(this).hasClass(self.options.classes.modified);
+        return $(this).data([self.options.namespace, self.states.modified].join("."));
       });
     },
 
@@ -404,8 +392,8 @@
      * Reset which elements where changed/modified before saving.
      */
     resetFields: function() {
-      this.changedInputs().removeClass(this.options.classes.changed);
-      this.modifiedInputs().removeClass(this.options.classes.modified);
+      this.inputs().data([this.options.namespace, this.states.changed].join("."), false);
+      this.inputs().data([this.options.namespace, this.states.modified].join("."), false);
     },
 
     /**
